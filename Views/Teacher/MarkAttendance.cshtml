@@ -1,0 +1,120 @@
+@model AttendenceManagementSystem.ViewModels.MarkAttendanceViewModel
+
+@{
+    ViewData["Title"] = "Mark Attendance";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="bi bi-check2-square"></i> Mark Attendance</h2>
+            <div class="card border-primary mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">@Model.SubjectCode - @Model.SubjectName</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <strong><i class="bi bi-calendar3"></i> Batch:</strong>
+                            <span class="badge bg-info text-dark">@Model.BatchName</span>
+                        </div>
+                        <div class="col-md-3">
+                            <strong><i class="bi bi-people"></i> Section:</strong>
+                            <span class="badge bg-warning text-dark">@Model.SectionName</span>
+                        </div>
+                        <div class="col-md-3">
+                            <strong><i class="bi bi-calendar-event"></i> Date:</strong>
+                            <span class="badge bg-secondary">@Model.Date.ToString("yyyy-MM-dd")</span>
+                        </div>
+                        <div class="col-md-3">
+                            <strong><i class="bi bi-clock"></i> Time:</strong>
+                            <span class="badge bg-success">@Model.StartTime.ToString(@"hh\:mm") - @Model.EndTime.ToString(@"hh\:mm")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form asp-action="MarkAttendance" method="post">
+        <input type="hidden" asp-for="CourseOfferingId" />
+        <input type="hidden" asp-for="ClassScheduleId" />
+        <input type="hidden" asp-for="Date" />
+        
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0"><i class="bi bi-list-check"></i> Student Attendance - @Model.Students.Count Student(s)</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th style="width: 5%;">#</th>
+                                <th style="width: 15%;">Roll Number</th>
+                                <th style="width: 30%;">Student Name</th>
+                                <th style="width: 50%;" class="text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < Model.Students.Count; i++)
+                            {
+                                <tr>
+                                    <td class="align-middle">@(i + 1)</td>
+                                    <td class="align-middle">
+                                        <strong class="text-success">@Model.Students[i].RollNumber</strong>
+                                        <input type="hidden" asp-for="Students[i].StudentEnrollmentId" />
+                                        <input type="hidden" asp-for="Students[i].StudentId" />
+                                        <input type="hidden" asp-for="Students[i].RollNumber" />
+                                        <input type="hidden" asp-for="Students[i].StudentName" />
+                                    </td>
+                                    <td class="align-middle">@Model.Students[i].StudentName</td>
+                                    <td class="align-middle">
+                                        <div class="btn-group w-100" role="group">
+                                            <input type="radio" class="btn-check" name="Students[@i].Status" id="present_@i" value="0" checked />
+                                            <label class="btn btn-outline-success" for="present_@i">
+                                                <i class="bi bi-check-circle"></i> Present
+                                            </label>
+
+                                            <input type="radio" class="btn-check" name="Students[@i].Status" id="absent_@i" value="1" />
+                                            <label class="btn btn-outline-danger" for="absent_@i">
+                                                <i class="bi bi-x-circle"></i> Absent
+                                            </label>
+
+                                            <input type="radio" class="btn-check" name="Students[@i].Status" id="leave_@i" value="2" />
+                                            <label class="btn btn-outline-info" for="leave_@i">
+                                                <i class="bi bi-calendar-x"></i> Leave
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4 d-flex gap-2">
+            <button type="submit" class="btn btn-primary btn-lg" onclick="return confirm('Are you sure you want to submit attendance? This action cannot be undone.');">
+                <i class="bi bi-save"></i> Submit Attendance
+            </button>
+            <a asp-action="Index" class="btn btn-secondary btn-lg">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        // Optional: Add keyboard shortcuts for quick marking
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey && event.key === 's') {
+                event.preventDefault();
+                document.querySelector('form').submit();
+            }
+        });
+    </script>
+}

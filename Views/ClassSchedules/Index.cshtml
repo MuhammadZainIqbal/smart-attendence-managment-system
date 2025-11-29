@@ -1,0 +1,113 @@
+@model IEnumerable<AttendenceManagementSystem.Models.ClassSchedule>
+
+@{
+    ViewData["Title"] = "Class Schedules";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="content-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Class Schedules (Time Table)</h2>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Create Schedule
+        </a>
+    </div>
+
+    <div class="alert alert-info mb-4">
+        <i class="bi bi-info-circle"></i> 
+        <strong>Class Schedules</strong> define when each course meets. This is used for the Time-Locker feature to enable attendance marking only during class hours.
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="card mb-4" style="background-color: #f8f9fa; border: 1px solid #dee2e6;">
+        <div class="card-body">
+            <h5 class="card-title mb-3">
+                <i class="bi bi-funnel"></i> Filter Schedules
+            </h5>
+            <form method="get" asp-action="Index">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="batchId" class="form-label">Batch</label>
+                        <select name="batchId" id="batchId" class="form-select" asp-items="ViewBag.BatchId">
+                            <option value="">All Batches</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="sectionId" class="form-label">Section</label>
+                        <select name="sectionId" id="sectionId" class="form-select" asp-items="ViewBag.SectionId">
+                            <option value="">All Sections</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-primary flex-fill">
+                            <i class="bi bi-search"></i> Filter
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary flex-fill">
+                            <i class="bi bi-x-circle"></i> Reset
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Day</th>
+                        <th>Time</th>
+                        <th>Subject</th>
+                        <th>Batch - Section</th>
+                        <th>Teacher</th>
+                        <th>Grace Period</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <span class="badge bg-primary">@item.DayOfWeek.ToString()</span>
+                            </td>
+                            <td>
+                                <i class="bi bi-clock"></i> 
+                                @item.StartTime.ToString(@"hh\:mm") - @item.EndTime.ToString(@"hh\:mm")
+                            </td>
+                            <td>
+                                <strong>@item.CourseOffering.Subject.Code</strong> - @item.CourseOffering.Subject.Name
+                            </td>
+                            <td>
+                                <span class="badge bg-info text-dark">@item.CourseOffering.Batch.Name</span>
+                                <span class="badge bg-secondary">@item.CourseOffering.Section.Name</span>
+                            </td>
+                            <td>
+                                <i class="bi bi-person-badge"></i> @item.CourseOffering.Teacher.FullName
+                            </td>
+                            <td>
+                                @item.GracePeriodMinutes min
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">
+                                    <i class="bi bi-pencil-square"></i> Edit
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">
+                                    <i class="bi bi-trash"></i> Delete
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle"></i> No class schedules found. Create schedules to define when your courses meet.
+        </div>
+    }
+</div>

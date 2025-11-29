@@ -1,0 +1,113 @@
+@model AttendenceManagementSystem.Models.ClassSchedule
+
+@{
+    ViewData["Title"] = "Edit Class Schedule";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="content-card">
+    <h2 class="mb-4">Edit Class Schedule</h2>
+
+    <div class="alert alert-info mb-4">
+        <i class="bi bi-info-circle"></i> 
+        Modify the schedule timing for this course. Note: You cannot change the course itself - only the day, time, and grace period.
+    </div>
+
+    <!-- Read-Only Course Information -->
+    <div class="card border-primary mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-book"></i> Course Information (Read-Only)</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-2">
+                        <strong>Subject:</strong> 
+                        <span class="text-primary">@Model.CourseOffering.Subject.Code - @Model.CourseOffering.Subject.Name</span>
+                    </p>
+                </div>
+                <div class="col-md-3">
+                    <p class="mb-2">
+                        <strong>Batch:</strong> 
+                        <span class="badge bg-info text-dark">@Model.CourseOffering.Batch.Name</span>
+                    </p>
+                </div>
+                <div class="col-md-3">
+                    <p class="mb-2">
+                        <strong>Section:</strong> 
+                        <span class="badge bg-warning text-dark">@Model.CourseOffering.Section.Name</span>
+                    </p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <p class="mb-0">
+                        <strong>Teacher:</strong> 
+                        <span class="text-muted">@Model.CourseOffering.Teacher.FullName</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="dayOfWeek" class="form-label">Day of Week</label>
+                <select id="dayOfWeek" name="dayOfWeek" class="form-select" asp-items="ViewBag.DaysOfWeek" required>
+                    <option value="">-- Select Day --</option>
+                </select>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label for="startTime" class="form-label">Start Time</label>
+                <input id="startTime" name="startTime" type="time" class="form-control" 
+                       value="@Model.StartTime.ToString(@"hh\:mm")" required />
+                <small class="form-text text-muted">When the class begins</small>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label for="endTime" class="form-label">End Time</label>
+                <input id="endTime" name="endTime" type="time" class="form-control" 
+                       value="@Model.EndTime.ToString(@"hh\:mm")" required />
+                <small class="form-text text-muted">When the class ends</small>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="gracePeriodMinutes" class="form-label">Grace Period (Minutes)</label>
+            <input id="gracePeriodMinutes" name="gracePeriodMinutes" type="number" class="form-control" 
+                   value="@Model.GracePeriodMinutes" min="0" max="60" required />
+            <small class="form-text text-muted">
+                Additional time after start when attendance can be marked. Teachers can mark within: 
+                <strong>@Model.StartTime.ToString(@"hh\:mm") to @(Model.StartTime.Add(TimeSpan.FromMinutes(Model.GracePeriodMinutes)).ToString(@"hh\:mm"))</strong>
+            </small>
+        </div>
+
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle"></i> 
+            <strong>Validation:</strong> End time must be after start time. The system will prevent overlapping schedules for the same course on the same day.
+        </div>
+
+        @if (ViewData.ModelState.ErrorCount > 0)
+        {
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-circle"></i>
+                @Html.ValidationSummary(false, "", new { @class = "mb-0" })
+            </div>
+        }
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-check-circle"></i> Update Schedule
+            </button>
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

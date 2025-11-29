@@ -1,0 +1,74 @@
+@{
+    ViewData["Title"] = "Create Student";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="content-card">
+    <h2 class="mb-4">Add New Student</h2>
+
+    <div class="alert alert-info mb-4">
+        <i class="bi bi-info-circle"></i> 
+        <strong>Note:</strong> A random password will be generated and emailed to the student. 
+        They will be required to change it on their first login. The student will be automatically 
+        enrolled in all courses offered to the selected Batch and Section.
+    </div>
+
+    <form asp-action="Create" method="post">
+        <div class="mb-3">
+            <label for="rollNumber" class="form-label">Roll Number <span class="text-danger">*</span></label>
+            <input id="rollNumber" name="rollNumber" class="form-control" placeholder="e.g., 2023-CS-101, CS/2023/01, 15492" required maxlength="50" />
+            <div class="text-danger" data-valmsg-for="rollNumber"></div>
+            <small class="form-text text-muted">
+                Enter the student's unique Roll Number (Student ID). Must be unique within your institute.
+            </small>
+        </div>
+
+        <div class="mb-3">
+            <label for="fullName" class="form-label">Full Name</label>
+            <input id="fullName" name="fullName" class="form-control" placeholder="Enter student's full name" required />
+        </div>
+
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input id="email" name="email" class="form-control" type="email" placeholder="student@example.com" required />
+            <small class="form-text text-muted">
+                Login credentials will be sent to this email address.
+            </small>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="batchId" class="form-label">Batch</label>
+                <select id="batchId" name="batchId" class="form-select" asp-items="ViewBag.Batches" required>
+                    <option value="">-- Select Batch --</option>
+                </select>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label for="sectionId" class="form-label">Section</label>
+                <select id="sectionId" name="sectionId" class="form-select" asp-items="ViewBag.Sections" required>
+                    <option value="">-- Select Section --</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle"></i> 
+            <strong>Auto-Enrollment:</strong> Upon creation, this student will be automatically enrolled 
+            in all CourseOfferings that match the selected Batch and Section.
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-circle"></i> Create Student
+            </button>
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

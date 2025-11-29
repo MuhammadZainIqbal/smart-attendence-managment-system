@@ -1,0 +1,120 @@
+@model AttendenceManagementSystem.ViewModels.AttendancePortalClosedViewModel
+
+@{
+    ViewData["Title"] = "Attendance Portal Closed";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-danger shadow">
+                <div class="card-header bg-danger text-white text-center">
+                    <h3 class="mb-0">
+                        <i class="bi bi-exclamation-triangle-fill"></i> Attendance Portal Closed
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-warning" role="alert">
+                        <h5 class="alert-heading">
+                            <i class="bi bi-clock-history"></i> Time Window Restriction
+                        </h5>
+                        <p class="mb-0">You cannot mark attendance at this time due to the time-lock policy.</p>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="bi bi-book"></i> Course Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-2">
+                                <strong>Subject:</strong> @Model.SubjectCode - @Model.SubjectName
+                            </p>
+                            <p class="mb-2">
+                                <strong>Batch:</strong> <span class="badge bg-info text-dark">@Model.BatchName</span>
+                            </p>
+                            <p class="mb-0">
+                                <strong>Section:</strong> <span class="badge bg-warning text-dark">@Model.SectionName</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    @if (Model.StartTime != TimeSpan.Zero)
+                    {
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="bi bi-calendar-week"></i> Schedule Details</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-2">
+                                    <strong>Scheduled Day:</strong> @Model.ScheduledDay
+                                </p>
+                                <p class="mb-2">
+                                    <strong>Class Time:</strong> @Model.StartTime.ToString(@"hh\:mm") - @Model.EndTime.ToString(@"hh\:mm")
+                                </p>
+                                <p class="mb-2">
+                                    <strong>Grace Period:</strong> @Model.GracePeriodMinutes minutes
+                                </p>
+                                <p class="mb-0">
+                                    <strong>Attendance Window:</strong> 
+                                    <span class="badge bg-success">
+                                        @Model.StartTime.ToString(@"hh\:mm") - @Model.StartTime.Add(TimeSpan.FromMinutes(Model.GracePeriodMinutes)).ToString(@"hh\:mm")
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="alert alert-danger mb-3" role="alert">
+                        <h6 class="alert-heading"><i class="bi bi-info-circle"></i> Reason:</h6>
+                        <p class="mb-0">@Model.Reason</p>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="bi bi-clock"></i> Current Time</h5>
+                        </div>
+                        <div class="card-body">
+                            <h4 class="text-center text-danger mb-0">
+                                @Model.CurrentTime.ToString("hh:mm:ss tt")
+                            </h4>
+                            <p class="text-center text-muted mb-0">
+                                @Model.CurrentTime.ToString("dddd, MMMM dd, yyyy")
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info" role="alert">
+                        <h6 class="alert-heading"><i class="bi bi-lightbulb"></i> Policy Explanation:</h6>
+                        <ul class="mb-0">
+                            <li>Attendance can only be marked <strong>during the grace period</strong> (first @Model.GracePeriodMinutes minutes of class).</li>
+                            <li>This policy enforces <strong>punctuality</strong> and ensures accurate attendance records.</li>
+                            <li>If you believe this is an error, please contact your administrator.</li>
+                        </ul>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <a asp-action="Index" class="btn btn-primary btn-lg">
+                            <i class="bi bi-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 10px;
+    }
+    
+    .alert {
+        border-radius: 8px;
+    }
+    
+    .badge {
+        font-size: 0.95rem;
+        padding: 0.4em 0.8em;
+    }
+</style>

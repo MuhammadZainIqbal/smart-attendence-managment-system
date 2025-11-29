@@ -1,0 +1,80 @@
+@model AttendenceManagementSystem.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Register Your Institute";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0 text-center">
+                        <i class="bi bi-building"></i> Register Your Institute
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <p class="text-muted mb-4 text-center">
+                        Create your institute account and start managing attendance
+                    </p>
+
+                    <form asp-controller="Account" asp-action="SignUp" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="FullName" class="form-label fw-bold"></label>
+                            <input asp-for="FullName" class="form-control" placeholder="Enter your full name" />
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label fw-bold"></label>
+                            <input asp-for="Email" class="form-control" placeholder="admin@example.com" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="InstituteName" class="form-label fw-bold"></label>
+                            <input asp-for="InstituteName" class="form-control" placeholder="Enter your institute name" />
+                            <span asp-validation-for="InstituteName" class="text-danger small"></span>
+                            <small class="form-text text-muted">
+                                A unique Institute Code will be generated for login
+                            </small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Password" class="form-label fw-bold"></label>
+                            <input asp-for="Password" class="form-control" placeholder="Minimum 6 characters" />
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="ConfirmPassword" class="form-label fw-bold"></label>
+                            <input asp-for="ConfirmPassword" class="form-control" placeholder="Re-enter password" />
+                            <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle"></i> Register Institute
+                            </button>
+                        </div>
+                    </form>
+
+                    <hr class="my-4" />
+
+                    <p class="text-center mb-0">
+                        Already have an account?
+                        <a asp-controller="Account" asp-action="Login" class="text-decoration-none fw-bold">
+                            Login here
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

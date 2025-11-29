@@ -1,0 +1,113 @@
+@model IEnumerable<AttendenceManagementSystem.Areas.Identity.Data.ApplicationUser>
+
+@{
+    ViewData["Title"] = "Students";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="content-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Students</h2>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Add New Student
+        </a>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="card mb-4" style="background-color: #f8f9fa; border: 1px solid #dee2e6;">
+        <div class="card-body">
+            <h5 class="card-title mb-3">
+                <i class="bi bi-funnel"></i> Filter Students
+            </h5>
+            <form method="get" asp-action="Index">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="batchId" class="form-label">Batch</label>
+                        <select name="batchId" id="batchId" class="form-select" asp-items="ViewBag.BatchId">
+                            <option value="">All Batches</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="sectionId" class="form-label">Section</label>
+                        <select name="sectionId" id="sectionId" class="form-select" asp-items="ViewBag.SectionId">
+                            <option value="">All Sections</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-primary flex-fill">
+                            <i class="bi bi-search"></i> Filter
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary flex-fill">
+                            <i class="bi bi-x-circle"></i> Reset
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Roll Number</th>
+                        <th>Full Name</th>
+                        <th>Email</th>
+                        <th>Batch</th>
+                        <th>Section</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var student in Model)
+                    {
+                        var batchName = student.Batch?.Name ?? "N/A";
+                        var sectionName = student.Section?.Name ?? "N/A";
+
+                        <tr>
+                            <td><strong class="text-success">@student.RollNumber</strong></td>
+                            <td>@student.FullName</td>
+                            <td>@student.Email</td>
+                            <td>
+                                @if (batchName != "N/A")
+                                {
+                                    <span class="badge bg-primary">@batchName</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">@batchName</span>
+                                }
+                            </td>
+                            <td>
+                                @if (sectionName != "N/A")
+                                {
+                                    <span class="badge bg-info text-dark">@sectionName</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">@sectionName</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <form asp-action="Delete" asp-route-id="@student.Id" method="post" class="d-inline" 
+                                      onsubmit="return confirm('Are you sure you want to delete this student? All their enrollments will be removed.');">
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> No students found. Add your first student to get started.
+        </div>
+    }
+</div>

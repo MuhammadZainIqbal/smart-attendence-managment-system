@@ -1,0 +1,42 @@
+@{
+    ViewData["Title"] = "Create Teacher";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="content-card">
+    <h2 class="mb-4">Add New Teacher</h2>
+
+    <div class="alert alert-info mb-4">
+        <i class="bi bi-info-circle"></i> 
+        <strong>Note:</strong> A random password will be generated and emailed to the teacher. 
+        They will be required to change it on their first login.
+    </div>
+
+    <form asp-action="Create" method="post">
+        <div class="mb-3">
+            <label for="fullName" class="form-label">Full Name</label>
+            <input id="fullName" name="fullName" class="form-control" placeholder="Enter teacher's full name" required />
+        </div>
+
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input id="email" name="email" class="form-control" type="email" placeholder="teacher@example.com" required />
+            <small class="form-text text-muted">
+                Login credentials will be sent to this email address.
+            </small>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-circle"></i> Create Teacher
+            </button>
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

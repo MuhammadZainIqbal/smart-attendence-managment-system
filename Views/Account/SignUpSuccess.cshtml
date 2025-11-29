@@ -1,0 +1,102 @@
+@model AttendenceManagementSystem.ViewModels.SignUpSuccessViewModel
+@{
+    ViewData["Title"] = "Registration Successful";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-success">
+                <div class="card-header bg-success text-white text-center py-4">
+                    <h2 class="mb-0">
+                        <i class="bi bi-check-circle-fill"></i> Registration Successful!
+                    </h2>
+                </div>
+                <div class="card-body p-5">
+                    <div class="alert alert-success text-center mb-4" role="alert">
+                        <h4 class="alert-heading">
+                            <i class="bi bi-building-check"></i> Welcome, @Model.FullName!
+                        </h4>
+                        <p class="mb-0">Your institute <strong>@Model.InstituteName</strong> has been registered successfully.</p>
+                    </div>
+
+                    <div class="text-center mb-4">
+                        <h3 class="text-primary mb-3">
+                            <i class="bi bi-info-circle-fill"></i> IMPORTANT: Save Your Institute Code
+                        </h3>
+                        <div class="alert alert-warning py-4" role="alert">
+                            <p class="mb-2"><strong>Your Unique Institute Code:</strong></p>
+                            <h1 class="display-3 mb-0 text-dark">
+                                <span class="badge bg-warning text-dark p-4" style="font-size: 3rem;">
+                                    <i class="bi bi-key-fill"></i> @Model.InstituteCode
+                                </span>
+                            </h1>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info" role="alert">
+                        <h5 class="alert-heading">
+                            <i class="bi bi-clipboard-check"></i> What is the Institute Code?
+                        </h5>
+                        <p class="mb-2">This code is required for <strong>all users</strong> (Teachers and Students) to login to your institute.</p>
+                        <ul class="mb-0">
+                            <li>Share this code with your teachers and students</li>
+                            <li>They will need: <strong>Email + Password + Institute Code</strong> to login</li>
+                            <li>You can find this code anytime on your Admin Dashboard</li>
+                        </ul>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6 mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title"><i class="bi bi-person-circle"></i> Admin Account</h6>
+                                    <p class="card-text small mb-0">
+                                        <strong>Email:</strong> @Model.AdminEmail<br />
+                                        <strong>Role:</strong> Administrator
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title"><i class="bi bi-shield-lock"></i> Login Instructions</h6>
+                                    <p class="card-text small mb-0">
+                                        Use your email, password, and<br />
+                                        Institute Code: <strong class="text-primary">@Model.InstituteCode</strong>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <form asp-action="CompleteSignUp" asp-controller="Account" method="post">
+                            <button type="submit" class="btn btn-success btn-lg w-100">
+                                <i class="bi bi-box-arrow-in-right"></i> Continue to Admin Dashboard
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle"></i> You will be automatically logged in
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Optional: Auto-copy Institute Code to clipboard when user clicks on it
+    document.querySelector('.badge').addEventListener('click', function() {
+        var code = '@Model.InstituteCode';
+        navigator.clipboard.writeText(code).then(function() {
+            alert('Institute Code copied to clipboard: ' + code);
+        });
+    });
+</script>

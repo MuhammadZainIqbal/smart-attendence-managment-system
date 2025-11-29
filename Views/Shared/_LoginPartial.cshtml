@@ -1,0 +1,40 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using AttendenceManagementSystem.Areas.Identity.Data
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    var currentUser = await UserManager.GetUserAsync(User);
+    var fullName = currentUser?.FullName ?? "User";
+}
+
+<ul class="navbar-nav">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <li class="nav-item">
+            <span class="nav-link text-dark">
+                <i class="bi bi-person-circle"></i> Hello @fullName
+            </span>
+        </li>
+        <li class="nav-item">
+            <form class="form-inline" asp-controller="Account" asp-action="Logout" method="post">
+                <button type="submit" class="nav-link btn btn-link text-danger">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </button>
+            </form>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Account" asp-action="SignUp">
+                <i class="bi bi-building"></i> Register Institute
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">
+                <i class="bi bi-box-arrow-in-right"></i> Login
+            </a>
+        </li>
+    }
+</ul>

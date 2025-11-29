@@ -1,0 +1,201 @@
+@model AttendenceManagementSystem.ViewModels.StudentReportViewModel
+
+@{
+    ViewData["Title"] = "Attendance Report";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container mt-4">
+    <!-- Subject Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2>
+                        <i class="bi bi-clipboard-data"></i> Attendance Report
+                    </h2>
+                    <p class="text-muted mb-0">@Model.SubjectCode - @Model.SubjectName</p>
+                </div>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subject Details Card -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Subject Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <p class="mb-2"><strong>Subject Code:</strong></p>
+                            <h5>@Model.SubjectCode</h5>
+                        </div>
+                        <div class="col-md-3">
+                            <p class="mb-2"><strong>Subject Name:</strong></p>
+                            <h5>@Model.SubjectName</h5>
+                        </div>
+                        <div class="col-md-3">
+                            <p class="mb-2"><strong>Teacher:</strong></p>
+                            <h5>@Model.TeacherName</h5>
+                        </div>
+                        <div class="col-md-3">
+                            <p class="mb-2"><strong>Section:</strong></p>
+                            <h5>
+                                <span class="badge bg-info text-dark">@Model.BatchName</span>
+                                <span class="badge bg-warning text-dark">@Model.SectionName</span>
+                            </h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Summary -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="bi bi-list-ol text-primary" style="font-size: 2rem;"></i>
+                    <h3 class="mt-2 mb-0">@Model.TotalClasses</h3>
+                    <p class="text-muted mb-0">Total Classes</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100 bg-success text-white">
+                <div class="card-body">
+                    <i class="bi bi-check-circle-fill" style="font-size: 2rem;"></i>
+                    <h3 class="mt-2 mb-0">@Model.PresentCount</h3>
+                    <p class="mb-0">Present</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100 bg-danger text-white">
+                <div class="card-body">
+                    <i class="bi bi-x-circle-fill" style="font-size: 2rem;"></i>
+                    <h3 class="mt-2 mb-0">@Model.AbsentCount</h3>
+                    <p class="mb-0">Absent</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100 bg-info text-white">
+                <div class="card-body">
+                    <i class="bi bi-calendar-x-fill" style="font-size: 2rem;"></i>
+                    <h3 class="mt-2 mb-0">@Model.LeaveCount</h3>
+                    <p class="mb-0">Leave</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Percentage -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Overall Attendance Percentage</h5>
+                    <div class="progress" style="height: 35px;">
+                        <div class="progress-bar @(Model.AttendancePercentage >= 80 ? "bg-success" : Model.AttendancePercentage >= 70 ? "bg-warning" : "bg-danger")" 
+                             role="progressbar" 
+                             style="width: @Model.AttendancePercentage%" 
+                             aria-valuenow="@Model.AttendancePercentage" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                            <strong style="font-size: 1.2rem;">@Model.AttendancePercentage%</strong>
+                        </div>
+                    </div>
+                    <p class="mt-2 mb-0">
+                        @if (Model.AttendancePercentage >= 80)
+                        {
+                            <span class="badge bg-success">Excellent - Keep it up!</span>
+                        }
+                        else if (Model.AttendancePercentage >= 70)
+                        {
+                            <span class="badge bg-warning">Good - Try to improve!</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Poor - Attend more classes!</span>
+                        }
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance History Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="bi bi-calendar-week"></i> Attendance History</h5>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.AttendanceHistory.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th style="width: 5%;">#</th>
+                                        <th style="width: 20%;">Date</th>
+                                        <th style="width: 15%;">Day</th>
+                                        <th style="width: 20%;">Status</th>
+                                        <th style="width: 20%;">Marked At</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        int rowNumber = 1;
+                                    }
+                                    @foreach (var record in Model.AttendanceHistory)
+                                    {
+                                        <tr>
+                                            <td class="align-middle">@rowNumber</td>
+                                            <td class="align-middle">
+                                                <strong>@record.Date.ToString("yyyy-MM-dd")</strong>
+                                            </td>
+                                            <td class="align-middle">
+                                                @record.DayOfWeek
+                                            </td>
+                                            <td class="align-middle">
+                                                <span class="badge @record.StatusBadgeClass">
+                                                    <i class="bi @record.StatusIcon"></i> @record.Status
+                                                </span>
+                                                @if (record.IsArchived)
+                                                {
+                                                    <span class="badge bg-secondary ms-1" title="This class schedule has been archived">
+                                                        <i class="bi bi-archive"></i> Archived
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td class="align-middle text-muted">
+                                                @record.MarkedAt.ToString("yyyy-MM-dd hh:mm tt")
+                                            </td>
+                                        </tr>
+                                        rowNumber++;
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info m-3">
+                            <i class="bi bi-info-circle"></i> No attendance records found for this subject yet.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

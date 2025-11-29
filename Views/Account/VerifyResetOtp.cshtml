@@ -1,0 +1,153 @@
+@model AttendenceManagementSystem.ViewModels.VerifyOtpViewModel
+@{
+    ViewData["Title"] = "Verify Reset Code";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-info">
+                <div class="card-header bg-info text-white text-center py-4">
+                    <h3 class="mb-0">
+                        <i class="bi bi-shield-check"></i> Verify Reset Code
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    @if (string.IsNullOrEmpty(Model.Email))
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <strong>Error:</strong> Email is missing. Please start from <a asp-action="ForgotPassword">Forgot Password</a> page.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info text-center" role="alert">
+                            <p class="mb-2"><strong>Enter the 6-digit OTP sent to:</strong></p>
+                            <h5 class="text-info">@Model.Email</h5>
+                        </div>
+                    }
+
+                    <form asp-action="VerifyResetOtp" asp-controller="Account" method="post" id="otpForm">
+                        <input type="hidden" asp-for="Email" />
+                        
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="alert alert-danger" role="alert">
+                                <div asp-validation-summary="All"></div>
+                            </div>
+                        }
+
+                        <div class="mb-4">
+                            <label asp-for="Code" class="form-label fw-bold">
+                                <i class="bi bi-key"></i> Verification Code
+                            </label>
+                            <input asp-for="Code" 
+                                   class="form-control form-control-lg text-center" 
+                                   placeholder="000000" 
+                                   maxlength="6"
+                                   style="font-size: 2rem; letter-spacing: 10px;" 
+                                   autofocus 
+                                   data-val="true"
+                                   data-val-required="OTP code is required"
+                                   data-val-length="OTP must be exactly 6 digits"
+                                   data-val-length-min="6"
+                                   data-val-length-max="6"
+                                   data-val-regex="OTP must be a 6-digit number"
+                                   data-val-regex-pattern="^\d{6}$" />
+                            <span asp-validation-for="Code" class="text-danger small"></span>
+                            <small class="form-text text-muted">
+                                <i class="bi bi-clock"></i> This code will expire in 10 minutes
+                            </small>
+                        </div>
+
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-info btn-lg text-white" id="verifyBtn">
+                                <i class="bi bi-check-circle"></i> Verify Code
+                            </button>
+                        </div>
+                    </form>
+
+                    <hr class="my-4" />
+
+                    <div class="text-center">
+                        <p class="text-muted small mb-2">
+                            <i class="bi bi-envelope-x"></i> Didn't receive the code?
+                        </p>
+                        <p class="mb-0">
+                            <a asp-action="ForgotPassword" asp-controller="Account" class="text-decoration-none">
+                                <i class="bi bi-arrow-clockwise"></i> Resend OTP
+                            </a>
+                            <span class="mx-2">|</span>
+                            <a asp-action="Login" asp-controller="Account" class="text-decoration-none">
+                                <i class="bi bi-arrow-left"></i> Back to Login
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Expiry Warning -->
+            <div class="mt-3 alert alert-warning" role="alert">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <strong>Note:</strong> For security reasons, each OTP can only be used once and expires after 10 minutes.
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            console.log("VerifyResetOtp page loaded");
+            console.log("Model.Email:", '@Model.Email');
+            console.log("Model.Code:", '@Model.Code');
+
+            // Numeric-only input
+            $('input[name="Code"]').on('input', function(e) {
+                this.value = this.value.replace(/\D/g, '');
+            });
+
+            // Form submission handler
+            $('#otpForm').on('submit', function(e) {
+                console.log("Form submitting...");
+                var code = $('input[name="Code"]').val();
+                var email = $('input[name="Email"]').val();
+                console.log("Code:", code);
+                console.log("Email:", email);
+                console.log("Code length:", code.length);
+
+                // Remove any validation errors from UserId (not used in this flow)
+                $('input[name="UserId"]').removeClass('input-validation-error');
+                $('.field-validation-error[data-valmsg-for="UserId"]').remove();
+
+                // Client-side validation
+                if (code.length !== 6) {
+                    e.preventDefault();
+                    alert('Please enter a 6-digit OTP');
+                    console.log("Validation failed: Code must be 6 digits");
+                    return false;
+                }
+
+                if (!email) {
+                    e.preventDefault();
+                    alert('Session expired. Please try forgot password again.');
+                    console.log("Validation failed: Email is missing");
+                    return false;
+                }
+
+                console.log("Validation passed, submitting form...");
+                $('#verifyBtn').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Verifying...');
+                
+                // Let the form submit naturally
+                return true;
+            });
+
+            // Debug button click
+            $('#verifyBtn').on('click', function(e) {
+                console.log("Verify button clicked");
+            });
+        });
+    </script>
+}

@@ -1,0 +1,46 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Present!</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/AttendenceManagementSystem.styles.css" asp-append-version="true" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+</head>
+<body class="public-layout">
+    <!-- Public Navbar -->
+    <nav class="public-navbar">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="/" class="navbar-brand">
+                    <span style="color: var(--color-primary); font-weight: 800; font-size: 24px;">Present</span><span style="color: var(--color-success); font-weight: 800; font-size: 24px;">!</span>
+                </a>
+                <partial name="_LoginPartial" />
+            </div>
+        </div>
+    </nav>
+
+    <!-- Public Content -->
+    <div class="public-content">
+        <div class="container">
+            <main role="main">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center text-muted py-4 mt-5">
+        <div class="container">
+            <p class="mb-0">&copy; 2025 Present! - Smart Attendance Management System</p>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

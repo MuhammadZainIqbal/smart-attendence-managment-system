@@ -1,0 +1,132 @@
+@model AttendenceManagementSystem.ViewModels.InstituteSettingsViewModel
+
+@{
+    ViewData["Title"] = "Institute Settings";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2><i class="bi bi-gear-fill"></i> Institute Settings</h2>
+                    <p class="text-muted mb-0">Configure system-wide settings for your institute</p>
+                </div>
+            </div>
+
+            <!-- Success/Error Messages -->
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <!-- Institute Information Card -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-building"></i> Institute Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Institute Name</label>
+                            <p class="fw-bold">@Model.InstituteName</p>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label text-muted">Institute Code</label>
+                            <p class="fw-bold"><span class="badge bg-success">@Model.InstituteCode</span></p>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label text-muted">Admin Email</label>
+                            <p class="fw-bold">@Model.AdminEmail</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Time Zone Settings Card -->
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Time Zone Configuration</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-4">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Why Time Zone Matters:</strong> 
+                        The Time Zone setting ensures that time-locked features (like Attendance Marking) 
+                        respect your institute's local time, regardless of where the server is hosted.
+                    </div>
+
+                    <!-- Current Institute Time Display -->
+                    <div class="alert alert-success mb-4">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <i class="bi bi-clock"></i> <strong>Current Institute Time:</strong>
+                            </div>
+                            <div class="col-md-6 text-md-end">
+                                <h4 class="mb-0">@Model.CurrentInstituteTime.ToString("dddd, MMMM dd, yyyy - hh:mm:ss tt")</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Time Zone Form -->
+                    <form asp-action="Edit" method="post">
+                        @Html.AntiForgeryToken()
+                        
+                        <div class="mb-4">
+                            <label asp-for="TimeZoneId" class="form-label">Select Time Zone</label>
+                            <select asp-for="TimeZoneId" asp-items="Model.AvailableTimeZones" class="form-select form-select-lg">
+                                <option value="">-- Select a Time Zone --</option>
+                            </select>
+                            <span asp-validation-for="TimeZoneId" class="text-danger"></span>
+                            <div class="form-text">
+                                <i class="bi bi-lightbulb"></i> 
+                                <strong>Tip:</strong> Search for your country or city in the dropdown. 
+                                For Pakistan, select "Pakistan Standard Time".
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle"></i> Save Settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Help Card -->
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-question-circle"></i> Need Help?</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2"><strong>Common Time Zones:</strong></p>
+                    <ul class="mb-0">
+                        <li><strong>Pakistan:</strong> Pakistan Standard Time (UTC+05:00)</li>
+                        <li><strong>India:</strong> India Standard Time (UTC+05:30)</li>
+                        <li><strong>UAE:</strong> Arabian Standard Time (UTC+04:00)</li>
+                        <li><strong>UK:</strong> GMT Standard Time (UTC+00:00)</li>
+                        <li><strong>USA (East):</strong> Eastern Standard Time (UTC-05:00)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

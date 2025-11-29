@@ -1,0 +1,169 @@
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="mb-4">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <h5 class="alert-heading">
+                <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+            </h5>
+            <p class="mb-0">
+                <strong>IMPORTANT:</strong> Save your Institute Code below. Users will need it to login.
+            </p>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="alert alert-success" role="alert">
+        <h4 class="alert-heading">
+            <i class="bi bi-shield-check"></i> Welcome, Administrator!
+        </h4>
+        <p>You have successfully logged into the Admin Dashboard for <strong>@ViewBag.InstituteName</strong>.</p>
+        <hr>
+        <div class="d-flex align-items-center justify-content-between flex-wrap">
+            <div>
+                <p class="mb-0">
+                    <strong>Your Institute Code:</strong>
+                </p>
+            </div>
+            <div>
+                <h3 class="mb-0">
+                    <span class="badge bg-warning text-dark fs-4">
+                        <i class="bi bi-key-fill"></i> @ViewBag.InstituteCode
+                    </span>
+                </h3>
+            </div>
+        </div>
+        <small class="text-muted mt-2 d-block">
+            <i class="bi bi-info-circle"></i> Share this code with teachers and students. They will need it to login.
+        </small>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Academic Section -->
+    <div class="col-12">
+        <h5 class="mb-3">Academic Management</h5>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Batches</h6>
+                        <h2 class="mb-0">@ViewBag.BatchCount</h2>
+                    </div>
+                    <div class="text-primary">
+                        <i class="bi bi-calendar3" style="font-size: 3rem;"></i>
+                    </div>
+                </div>
+                <a asp-controller="Batches" asp-action="Index" class="btn btn-sm btn-outline-primary mt-3 w-100">
+                    Manage Batches
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Sections</h6>
+                        <h2 class="mb-0">@ViewBag.SectionCount</h2>
+                    </div>
+                    <div class="text-info">
+                        <i class="bi bi-collection" style="font-size: 3rem;"></i>
+                    </div>
+                </div>
+                <a asp-controller="Sections" asp-action="Index" class="btn btn-sm btn-outline-info mt-3 w-100">
+                    Manage Sections
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Subjects</h6>
+                        <h2 class="mb-0">@ViewBag.SubjectCount</h2>
+                    </div>
+                    <div class="text-success">
+                        <i class="bi bi-book" style="font-size: 3rem;"></i>
+                    </div>
+                </div>
+                <a asp-controller="Subjects" asp-action="Index" class="btn btn-sm btn-outline-success mt-3 w-100">
+                    Manage Subjects
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Section -->
+    <div class="col-12 mt-4">
+        <h5 class="mb-3">User Management</h5>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card border-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Teachers</h6>
+                        <h2 class="mb-0">@ViewBag.TeacherCount</h2>
+                    </div>
+                    <div class="text-warning">
+                        <i class="bi bi-person-badge" style="font-size: 3rem;"></i>
+                    </div>
+                </div>
+                <a asp-controller="Teachers" asp-action="Index" class="btn btn-sm btn-outline-warning mt-3 w-100">
+                    Manage Teachers
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card border-danger">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Students</h6>
+                        <h2 class="mb-0">@ViewBag.StudentCount</h2>
+                    </div>
+                    <div class="text-danger">
+                        <i class="bi bi-people" style="font-size: 3rem;"></i>
+                    </div>
+                </div>
+                <a asp-controller="Students" asp-action="Index" class="btn btn-sm btn-outline-danger mt-3 w-100">
+                    Manage Students
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Course Offerings -->
+    <div class="col-12 mt-4">
+        <div class="card border-secondary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Total Course Offerings</h6>
+                        <h2 class="mb-0">@ViewBag.CourseOfferingCount</h2>
+                        <p class="text-muted mb-0 mt-2">Active courses being taught this semester</p>
+                    </div>
+                    <div class="text-secondary">
+                        <i class="bi bi-journal-text" style="font-size: 3rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

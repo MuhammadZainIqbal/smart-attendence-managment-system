@@ -1,0 +1,194 @@
+@model AttendenceManagementSystem.ViewModels.CourseReportViewModel
+
+@{
+    ViewData["Title"] = "Course Report";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="content-card">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>
+                <i class="bi bi-graph-up"></i> Course Attendance Report
+            </h2>
+            <p class="text-muted mb-0">
+                <strong>@Model.SubjectCode</strong> - @Model.SubjectName | 
+                @Model.BatchName - @Model.SectionName
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="ExportCourseReport" asp-route-id="@Model.CourseOfferingId" class="btn btn-success">
+                <i class="bi bi-file-earmark-excel"></i> Export to Excel
+            </a>
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Reports
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-calendar-check"></i> Total Classes Held
+                    </h5>
+                    <h2 class="mb-0">@Model.TotalClassesHeld</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-percent"></i> Class Average
+                    </h5>
+                    <h2 class="mb-0">@Model.ClassAveragePercentage%</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-people"></i> Total Students
+                    </h5>
+                    <h2 class="mb-0">@Model.StudentStats.Count</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Distribution Chart -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">
+                <i class="bi bi-pie-chart"></i> Attendance Distribution
+            </h5>
+            <div class="row">
+                <div class="col-md-6 mx-auto">
+                    <canvas id="distributionChart"></canvas>
+                </div>
+            </div>
+            <div class="row mt-3 text-center">
+                <div class="col-md-4">
+                    <span class="badge bg-success" style="font-size: 1.1rem;">
+                        Excellent (≥85%): @Model.GreenCount students
+                    </span>
+                </div>
+                <div class="col-md-4">
+                    <span class="badge bg-warning text-dark" style="font-size: 1.1rem;">
+                        Good (70-84%): @Model.YellowCount students
+                    </span>
+                </div>
+                <div class="col-md-4">
+                    <span class="badge bg-danger" style="font-size: 1.1rem;">
+                        Poor (<70%): @Model.RedCount students
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Details Table -->
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">
+                <i class="bi bi-table"></i> Student-wise Attendance
+            </h5>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Roll Number</th>
+                            <th>Student Name</th>
+                            <th class="text-center">Present</th>
+                            <th class="text-center">Absent</th>
+                            <th class="text-center">Leave</th>
+                            <th class="text-center">Total</th>
+                            <th class="text-center">Percentage</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var student in Model.StudentStats)
+                        {
+                            <tr>
+                                <td><strong class="text-primary">@student.RollNumber</strong></td>
+                                <td>@student.StudentName</td>
+                                <td class="text-center">
+                                    <span class="badge bg-success">@student.PresentCount</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-danger">@student.AbsentCount</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-warning text-dark">@student.LeaveCount</span>
+                                </td>
+                                <td class="text-center"><strong>@student.TotalClasses</strong></td>
+                                <td class="text-center">
+                                    <span class="badge bg-@student.StatusBadge" style="font-size: 1rem;">
+                                        @student.AttendancePercentage%
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <a asp-action="StudentReport" asp-route-id="@student.EnrollmentId" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-file-text"></i> View History
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <script>
+        // Serialize ViewModel data to JavaScript
+        var chartData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ChartData));
+
+        // Create Pie Chart
+        var ctx = document.getElementById('distributionChart').getContext('2d');
+        var distributionChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: chartData.labels,
+                datasets: [{
+                    data: chartData.data,
+                    backgroundColor: chartData.backgroundColors,
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: {
+                                size: 14
+                            }
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Student Performance Distribution',
+                        font: {
+                            size: 16
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+}

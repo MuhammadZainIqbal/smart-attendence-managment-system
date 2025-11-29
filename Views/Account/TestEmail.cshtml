@@ -1,0 +1,116 @@
+@{
+    ViewData["Title"] = "Test Email Configuration";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-info">
+                <div class="card-header bg-info text-white text-center py-4">
+                    <h3 class="mb-0">
+                        <i class="bi bi-envelope-at"></i> Test Email Configuration
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-warning" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <strong>Debug Tool:</strong> This page is for testing SMTP settings only. Remove in production!
+                    </div>
+
+                    @if (ViewBag.Success != null)
+                    {
+                        <div class="alert alert-success" role="alert">
+                            <h6 class="alert-heading">
+                                <i class="bi bi-check-circle-fill"></i> Success!
+                            </h6>
+                            <p class="mb-0">@ViewBag.Success</p>
+                        </div>
+                    }
+
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <h6 class="alert-heading">
+                                <i class="bi bi-x-circle-fill"></i> Error
+                            </h6>
+                            <p class="mb-0" style="white-space: pre-line;">@ViewBag.Error</p>
+                        </div>
+                    }
+
+                    <form method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-4">
+                            <label for="email" class="form-label fw-bold">
+                                <i class="bi bi-envelope"></i> Test Email Address
+                            </label>
+                            <input type="email" 
+                                   name="email" 
+                                   id="email" 
+                                   class="form-control form-control-lg" 
+                                   placeholder="your.email@example.com" 
+                                   required />
+                            <small class="form-text text-muted">
+                                Enter the email where you want to receive the test message
+                            </small>
+                        </div>
+
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-info btn-lg text-white">
+                                <i class="bi bi-send"></i> Send Test Email
+                            </button>
+                        </div>
+                    </form>
+
+                    <hr class="my-4" />
+
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-3">
+                                <i class="bi bi-gear-fill"></i> Current SMTP Configuration
+                            </h6>
+                            <table class="table table-sm mb-0">
+                                <tr>
+                                    <td><strong>Server:</strong></td>
+                                    <td>smtp.gmail.com</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Port:</strong></td>
+                                    <td>587</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>From Email:</strong></td>
+                                    <td>dsaassignment7007@gmail.com</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>SSL:</strong></td>
+                                    <td>Enabled</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <h6 class="fw-bold">
+                            <i class="bi bi-info-circle"></i> Troubleshooting Tips
+                        </h6>
+                        <ul class="small text-muted">
+                            <li>Make sure you're using an <strong>App Password</strong>, not your regular Gmail password</li>
+                            <li>Enable <strong>2-Step Verification</strong> in your Google Account</li>
+                            <li>Generate App Password at: <a href="https://myaccount.google.com/apppasswords" target="_blank">Google App Passwords</a></li>
+                            <li>Check if Gmail account has "Less secure app access" disabled (use App Password instead)</li>
+                            <li>Verify the email address in appsettings.json is correct</li>
+                        </ul>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <a asp-action="Login" class="text-decoration-none">
+                            <i class="bi bi-arrow-left"></i> Back to Login
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

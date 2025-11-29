@@ -1,0 +1,107 @@
+@model AttendenceManagementSystem.ViewModels.VerifyOtpViewModel
+@{
+    ViewData["Title"] = "Verify Your Email";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-primary">
+                <div class="card-header bg-primary text-white text-center py-4">
+                    <h3 class="mb-0">
+                        <i class="bi bi-envelope-check"></i> Verify Your Email
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    @if (TempData["EmailWarning"] != null)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <h6 class="alert-heading">
+                                <i class="bi bi-exclamation-triangle-fill"></i> Email Delivery Failed
+                            </h6>
+                            <p class="mb-0">@TempData["EmailWarning"]</p>
+                            <hr>
+                            <small class="text-muted">
+                                <strong>For Testing:</strong> Check the application console/terminal for your OTP code.
+                            </small>
+                        </div>
+                    }
+
+                    <div class="alert alert-info text-center" role="alert">
+                        <p class="mb-2"><strong>We've sent a 6-digit OTP to:</strong></p>
+                        <h5 class="text-primary">@Model.Email</h5>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(ViewBag.InstituteCode))
+                    {
+                        <div class="alert alert-warning" role="alert">
+                            <h6 class="alert-heading">
+                                <i class="bi bi-key-fill"></i> Your Institute Code
+                            </h6>
+                            <h4 class="mb-0 text-center">
+                                <span class="badge bg-warning text-dark p-3" style="font-size: 1.5rem; letter-spacing: 3px;">
+                                    @ViewBag.InstituteCode
+                                </span>
+                            </h4>
+                            <small class="d-block mt-2 text-muted">Save this code - you'll need it to login</small>
+                        </div>
+                    }
+
+                    <form asp-action="VerifyEmail" asp-controller="Account" method="post">
+                        <input type="hidden" asp-for="UserId" />
+                        <input type="hidden" asp-for="Email" />
+                        
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <div class="mb-4">
+                            <label asp-for="Code" class="form-label fw-bold"></label>
+                            <input asp-for="Code" 
+                                   class="form-control form-control-lg text-center" 
+                                   placeholder="000000" 
+                                   maxlength="6"
+                                   style="font-size: 2rem; letter-spacing: 10px;" 
+                                   autofocus />
+                            <span asp-validation-for="Code" class="text-danger small"></span>
+                            <small class="form-text text-muted">
+                                <i class="bi bi-info-circle"></i> Enter the 6-digit code sent to your email
+                            </small>
+                        </div>
+
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle"></i> Verify & Continue
+                            </button>
+                        </div>
+                    </form>
+
+                    <hr class="my-4" />
+
+                    <div class="text-center">
+                        <p class="text-muted small mb-2">
+                            <i class="bi bi-clock-history"></i> Didn't receive the email? Check your spam folder.
+                        </p>
+                        <p class="mb-0">
+                            <a asp-action="SignUp" asp-controller="Account" class="text-decoration-none">
+                                <i class="bi bi-arrow-left"></i> Back to Sign Up
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Auto-focus and auto-submit on 6 digits
+        document.querySelector('input[name="Code"]').addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '');
+            if (this.value.length === 6) {
+                this.form.submit();
+            }
+        });
+    </script>
+}

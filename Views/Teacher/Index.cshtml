@@ -1,0 +1,245 @@
+@model AttendenceManagementSystem.ViewModels.TeacherDashboardViewModel
+
+@{
+    ViewData["Title"] = "Teacher Dashboard";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container mt-4">
+    <!-- SMART BANNER: Hero Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert @Model.ClassStatus.CssClass alert-dismissible fade show shadow-lg border-0" role="alert" style="font-size: 1.1rem;">
+                <h4 class="alert-heading mb-3">
+                    <i class="bi @Model.ClassStatus.IconClass" style="font-size: 1.5rem;"></i>
+                    @if (Model.ClassStatus.Status == AttendenceManagementSystem.ViewModels.ClassStatusType.Active)
+                    {
+                        <span>Attendance Portal OPEN</span>
+                    }
+                    else if (Model.ClassStatus.Status == AttendenceManagementSystem.ViewModels.ClassStatusType.Upcoming)
+                    {
+                        <span>Next Class Approaching</span>
+                    }
+                    else
+                    {
+                        <span>Class Status</span>
+                    }
+                </h4>
+                
+                <p class="mb-3" style="font-size: 1.15rem;">
+                    @Model.ClassStatus.Message
+                </p>
+
+                @if (Model.ClassStatus.Status == AttendenceManagementSystem.ViewModels.ClassStatusType.Active)
+                {
+                    <div class="d-grid gap-2 d-md-block">
+                        <a asp-action="MarkAttendance" asp-route-id="@Model.ClassStatus.ClassScheduleId" 
+                           class="btn btn-light btn-lg shadow-sm" id="markAttendanceBtn">
+                            <i class="bi bi-check-circle-fill"></i> Mark Attendance Now
+                        </a>
+                        <span class="ms-3 badge bg-light text-dark" style="font-size: 1.1rem;">
+                            <i class="bi bi-hourglass-split"></i> 
+                            <span id="timeRemaining">Loading...</span>
+                        </span>
+                    </div>
+                }
+                else if (Model.ClassStatus.Status == AttendenceManagementSystem.ViewModels.ClassStatusType.Upcoming)
+                {
+                    <div class="card bg-white border-0 mt-3" style="max-width: 400px;">
+                        <div class="card-body">
+                            <h6 class="card-title mb-2">
+                                <i class="bi bi-book"></i> @Model.ClassStatus.SubjectCode - @Model.ClassStatus.SubjectName
+                            </h6>
+                            <p class="card-text mb-1">
+                                <span class="badge bg-info text-dark">@Model.ClassStatus.BatchName</span>
+                                <span class="badge bg-warning text-dark">@Model.ClassStatus.SectionName</span>
+                            </p>
+                            <p class="card-text text-muted mb-0">
+                                <i class="bi bi-clock"></i> Starts at @(Model.ClassStatus.UpcomingStartTime.HasValue ? 
+                                    DateTime.Today.Add(Model.ClassStatus.UpcomingStartTime.Value).ToString("hh:mm tt") : "N/A")
+                            </p>
+                        </div>
+                    </div>
+                }
+
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Course Cards Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="bi bi-book-half"></i> My Courses</h2>
+            <p class="text-muted">All courses assigned to you. Click "Mark Attendance" to access time-locked portal.</p>
+        </div>
+    </div>
+
+    @if (Model.CourseOfferings.Any())
+    {
+        <div class="row">
+            @foreach (var course in Model.CourseOfferings)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="bi bi-book"></i> @course.Subject.Code
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title">@course.Subject.Name</h6>
+                            <hr />
+                            <p class="mb-2">
+                                <strong><i class="bi bi-calendar3"></i> Batch:</strong>
+                                <span class="badge bg-info text-dark">@course.Batch.Name</span>
+                            </p>
+                            <p class="mb-2">
+                                <strong><i class="bi bi-people"></i> Section:</strong>
+                                <span class="badge bg-warning text-dark">@course.Section.Name</span>
+                            </p>
+                        </div>
+                        <div class="card-footer bg-white border-0">
+                            <p class="text-muted mb-0 text-center" style="font-size: 0.9rem;">
+                                <i class="bi bi-info-circle"></i> Use the banner above when class is active
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle"></i> 
+            <strong>No courses assigned.</strong> You don't have any course offerings assigned to you yet. Please contact your administrator.
+        </div>
+    }
+</div>
+
+@if (Model.ClassStatus.Status == AttendenceManagementSystem.ViewModels.ClassStatusType.Active)
+{
+    <style>
+        /* Pulse animation for active banner */
+        @@keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        .alert-success {
+            animation: pulse 2s ease-in-out infinite;
+        }
+    </style>
+
+    <script>
+        // ===== LIVE COUNTDOWN TIMER (Server-Synced) =====
+        (function() {
+            // Get server-calculated seconds remaining
+            let secondsRemaining = @(Model.ClassStatus.SecondsRemaining ?? 0);
+            
+            console.log('[Countdown] Initialized with seconds:', secondsRemaining);
+            
+            const timeRemainingElement = document.getElementById('timeRemaining');
+            const markAttendanceBtn = document.getElementById('markAttendanceBtn');
+
+            if (!timeRemainingElement) {
+                console.error('[Countdown] timeRemaining element not found!');
+                return;
+            }
+
+            // Format seconds into Smart Format (MM:SS or HH:MM:SS)
+            function formatTime(totalSeconds) {
+                if (totalSeconds <= 0) return '00:00';
+
+                const hours = Math.floor(totalSeconds / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
+
+                // Smart Format: Show hours only if > 0
+                if (hours > 0) {
+                    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                } else {
+                    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                }
+            }
+
+            // Update display immediately
+            timeRemainingElement.textContent = formatTime(secondsRemaining);
+
+            // Countdown logic (runs every 1 second)
+            const countdownInterval = setInterval(function() {
+                secondsRemaining--;
+                console.log('[Countdown] Tick:', secondsRemaining, 'seconds remaining');
+
+                if (secondsRemaining <= 0) {
+                    // Time expired!
+                    clearInterval(countdownInterval);
+                    
+                    // Update UI
+                    timeRemainingElement.textContent = '00:00';
+                    timeRemainingElement.parentElement.classList.remove('bg-light', 'text-dark');
+                    timeRemainingElement.parentElement.classList.add('bg-danger', 'text-white');
+                    timeRemainingElement.innerHTML = '<i class="bi bi-exclamation-triangle"></i> Time Expired - Refreshing...';
+                    
+                    // Disable button
+                    if (markAttendanceBtn) {
+                        markAttendanceBtn.classList.add('disabled');
+                        markAttendanceBtn.style.pointerEvents = 'none';
+                    }
+
+                    // Reload page after 2 seconds (backend will enforce portal closed)
+                    setTimeout(function() {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    // Update countdown
+                    timeRemainingElement.textContent = formatTime(secondsRemaining);
+                    
+                    // Optional: Add urgency styling when < 60 seconds
+                    if (secondsRemaining <= 60 && secondsRemaining > 0) {
+                        timeRemainingElement.parentElement.classList.remove('bg-light', 'text-dark');
+                        timeRemainingElement.parentElement.classList.add('bg-danger', 'text-white');
+                    }
+                }
+            }, 1000); // Update every 1 second
+        })();
+    </script>
+}
+
+@if (Model.ClassStatus.Status == AttendenceManagementSystem.ViewModels.ClassStatusType.Upcoming && Model.ClassStatus.SecondsUntilStart.HasValue)
+{
+    <script>
+        // ===== AUTO-REFRESH WHEN UPCOMING CLASS STARTS =====
+        (function() {
+            let secondsUntilStart = @Model.ClassStatus.SecondsUntilStart.Value;
+            
+            console.log('[Auto-Refresh] Upcoming class starts in', secondsUntilStart, 'seconds');
+            
+            // Refresh page when class starts (add 2 second buffer)
+            if (secondsUntilStart > 0 && secondsUntilStart <= 3600) { // Only if within 1 hour
+                setTimeout(function() {
+                    console.log('[Auto-Refresh] Class starting now - refreshing page...');
+                    location.reload();
+                }, (secondsUntilStart + 2) * 1000); // Add 2 second buffer
+            }
+        })();
+    </script>
+}
