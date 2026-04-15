@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="http://present.runasp.net/">
+  <a href="http://present.tryasp.net/">
     <img src="https://img.shields.io/badge/🚀%20LIVE%20DEMO-Visit%20Now-10B981?style=for-the-badge&labelColor=059669" alt="Live Demo"/>
   </a>
 </p>
@@ -23,7 +23,7 @@
 </p>
 
 <p align="center">
-  <a href="http://present.runasp.net/">View Live Demo</a> •
+  <a href="http://present.tryasp.net/">View Live Demo</a> •
   <a href="#-key-features">Features</a> •
   <a href="#-tech-stack">Tech Stack</a> •
   <a href="#%EF%B8%8F-local-development-setup">Setup Guide</a>
@@ -36,7 +36,7 @@
 > **Experience Present! without any installation!**
 
 <p align="center">
-  <a href="http://present.runasp.net/">
+  <a href="http://present.tryasp.net/">
     <img src="https://img.shields.io/badge/Click%20Here%20to%20Access-present.runasp.net-4F46E5?style=for-the-badge" alt="Access Live Demo"/>
   </a>
 </p>
@@ -452,7 +452,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 </p>
 
 <p align="center">
-  <a href="http://present.runasp.net/">
+  <a href="http://present.tryasp.net/">
     <img src="https://img.shields.io/badge/Try%20Present!%20Now-Live%20Demo-4F46E5?style=for-the-badge" alt="Try Now"/>
   </a>
 </p>
