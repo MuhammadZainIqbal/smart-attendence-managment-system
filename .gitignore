@@ -1,0 +1,40 @@
+# ========================================================
+# 1. DOTNET BUILD & PUBLISH EXCLUSIONS
+# ========================================================
+bin/
+obj/
+publish/
+*.user
+
+# Local Development Settings
+appsettings.Development.json
+
+# Environment Text Logs & DBs
+logs/
+*.log
+*.db
+
+# ========================================================
+# 2. IDE SPECIFIC EXCLUSIONS
+# ========================================================
+.vs/
+.vscode/
+*.suo
+*.userosscache
+*.sln.docstates
+
+# ========================================================
+# 3. TERRAFORM SECRETS & STATE EXCLUSIONS
+# ========================================================
+# Block all variable definition files containing raw API keys/passwords
+*.tfvars
+*.tfvars.json
+
+# Block local terraform execution states
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfstate.lock.info
+
+# Crash logs
+crash.log

@@ -104,6 +104,7 @@ namespace AttendenceManagementSystem.Controllers
                     // Send welcome email with credentials
                     try
                     {
+                        var loginUrl = $"{Request.Scheme}://{Request.Host}/Account/Login";
                         string emailSubject = $"Welcome to {institute?.Name} - Teacher Account Created";
                         string emailBody = $@"
                             <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
@@ -122,7 +123,7 @@ namespace AttendenceManagementSystem.Controllers
                                     <p style='margin: 0;'><strong>⚠️ Important:</strong> You will be required to change this password when you first log in.</p>
                                 </div>
 
-                                <p><strong>Login URL:</strong> <a href='https://localhost:44370/Account/Login'>Click here to login</a></p>
+                                <p><strong>Login URL:</strong> <a href='{loginUrl}'>Click here to login</a></p>
 
                                 <hr>
                                 <p>If you have any questions, please contact your administrator.</p>
@@ -185,11 +186,56 @@ namespace AttendenceManagementSystem.Controllers
 
             try
             {
+                // Clean up all Course Offerings assigned to this teacher
+                var teacherCourseOfferings = await _context.CourseOfferings
+                    .IgnoreQueryFilters()
+                    .Where(co => co.TeacherId == id)
+                    .ToListAsync();
+
+                foreach (var co in teacherCourseOfferings)
+                {
+                    // 1. Delete associated AttendanceRecords
+                    var attendanceRecords = await _context.AttendanceRecords
+                        .IgnoreQueryFilters()
+                        .Where(ar => ar.CourseOfferingId == co.Id)
+                        .ToListAsync();
+                    _context.AttendanceRecords.RemoveRange(attendanceRecords);
+                    await _context.SaveChangesAsync();
+
+                    // 2. Delete associated ClassSchedules
+                    var classSchedules = await _context.ClassSchedules
+                        .IgnoreQueryFilters()
+                        .Where(cs => cs.CourseOfferingId == co.Id)
+                        .ToListAsync();
+                    _context.ClassSchedules.RemoveRange(classSchedules);
+                    await _context.SaveChangesAsync();
+
+                    // 3. Delete associated StudentEnrollments
+                    var enrollments = await _context.StudentEnrollments
+                        .IgnoreQueryFilters()
+                        .Where(se => se.CourseOfferingId == co.Id)
+                        .ToListAsync();
+                    _context.StudentEnrollments.RemoveRange(enrollments);
+                    await _context.SaveChangesAsync();
+
+                    // 4. Delete the CourseOffering itself
+                    _context.CourseOfferings.Remove(co);
+                    await _context.SaveChangesAsync();
+                }
+
+                // Also clean up any orphan AttendanceRecords marked by this teacher on other course offerings
+                var markedAttendance = await _context.AttendanceRecords
+                    .IgnoreQueryFilters()
+                    .Where(ar => ar.MarkedByTeacherId == id)
+                    .ToListAsync();
+                _context.AttendanceRecords.RemoveRange(markedAttendance);
+                await _context.SaveChangesAsync();
+
                 var result = await _userManager.DeleteAsync(teacher);
                 
                 if (result.Succeeded)
                 {
-                    SetSuccessMessage($"Teacher '{teacher.FullName}' deleted successfully.");
+                    SetSuccessMessage($"Teacher '{teacher.FullName}' and all their course assignments/schedules deleted successfully.");
                 }
                 else
                 {
@@ -198,7 +244,8 @@ namespace AttendenceManagementSystem.Controllers
             }
             catch (Exception ex)
             {
-                SetErrorMessage($"Cannot delete this teacher: {ex.Message}");
+                var innerMessage = ex.InnerException?.Message ?? ex.Message;
+                SetErrorMessage($"Cannot delete this teacher: {innerMessage}");
             }
 
             return RedirectToAction(nameof(Index));

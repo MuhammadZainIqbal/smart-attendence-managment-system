@@ -1,0 +1,20 @@
+# Ignore compiled output folders
+bin/
+obj/
+publish/
+
+# Ignore local IDE configurations
+.vs/
+.vscode/
+*.csproj.user
+
+# Ignore repository configs and document bloat
+.git/
+.github/
+*.md
+*.bat
+*.ps1
+*.txt
+
+# Ignore OS junk
+UpgradeLog.htm

@@ -1,1 +1,126 @@
-[]
+[
+  {
+    "ContainingType": "AttendenceManagementSystem.Controllers.Api.AttendanceApiController",
+    "Method": "MarkAttendance",
+    "RelativePath": "api/AttendanceApi/mark",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "AttendenceManagementSystem.Controllers.Api.MarkAttendanceApiRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "AttendenceManagementSystem.Controllers.Api.AttendanceApiController",
+    "Method": "GetScheduleDetails",
+    "RelativePath": "api/AttendanceApi/schedule/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "AttendenceManagementSystem.Controllers.Api.ReportsApiController",
+    "Method": "GetCourseReport",
+    "RelativePath": "api/ReportsApi/course/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "startDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "endDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "AttendenceManagementSystem.Controllers.Api.ReportsApiController",
+    "Method": "GetTeacherCourses",
+    "RelativePath": "api/ReportsApi/courses",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "AttendenceManagementSystem.Controllers.Api.ReportsApiController",
+    "Method": "GetStudentReport",
+    "RelativePath": "api/ReportsApi/student/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "startDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "endDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "AttendenceManagementSystem.Controllers.SystemInfoController",
+    "Method": "GetClaims",
+    "RelativePath": "api/SystemInfo/claims",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "AttendenceManagementSystem.Controllers.SystemInfoController",
+    "Method": "GetStatus",
+    "RelativePath": "api/SystemInfo/status",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "AttendenceManagementSystem.Controllers.SystemInfoController",
+    "Method": "GetTenantStats",
+    "RelativePath": "api/SystemInfo/tenant-stats",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  }
+]

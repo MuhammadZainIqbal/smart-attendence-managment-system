@@ -18,8 +18,11 @@
             </p>
         </div>
         <div class="d-flex gap-2">
+            <a asp-action="ExportCourseReportPDF" asp-route-id="@Model.CourseOfferingId" asp-route-startDate="@Model.StartDate.ToString("yyyy-MM-dd")" asp-route-endDate="@Model.EndDate.ToString("yyyy-MM-dd")" class="btn btn-danger">
+                <i class="bi bi-file-earmark-pdf"></i> Export PDF
+            </a>
             <a asp-action="ExportCourseReport" asp-route-id="@Model.CourseOfferingId" class="btn btn-success">
-                <i class="bi bi-file-earmark-excel"></i> Export to Excel
+                <i class="bi bi-file-earmark-excel"></i> Export Excel
             </a>
             <a asp-action="Index" class="btn btn-secondary">
                 <i class="bi bi-arrow-left"></i> Back to Reports
@@ -27,7 +30,48 @@
         </div>
     </div>
 
-    <!-- Summary Cards -->
+    <!-- Date Filter - NOW WITH AJAX -->
+    <div class="card mb-4 border-primary">
+        <div class="card-header bg-primary text-white">
+            <i class="bi bi-funnel"></i> Date Range Filter
+        </div>
+        <div class="card-body">
+            <form id="filterForm" class="row g-3 align-items-end">
+                <input type="hidden" id="courseOfferingId" value="@Model.CourseOfferingId" />
+                <div class="col-md-4">
+                    <label for="startDate" class="form-label">From Date</label>
+                    <input type="date" class="form-control" id="startDate" name="startDate" 
+                           value="@Model.StartDate.ToString("yyyy-MM-dd")" max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-md-4">
+                    <label for="endDate" class="form-label">To Date</label>
+                    <input type="date" class="form-control" id="endDate" name="endDate" 
+                           value="@Model.EndDate.ToString("yyyy-MM-dd")" max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-md-4">
+                    <button type="button" id="applyFilterBtn" class="btn btn-primary me-2" onclick="applyFilter()">
+                        <span id="filterText"><i class="bi bi-search"></i> Apply Filter</span>
+                        <span id="filterSpinner" class="d-none">
+                            <span class="spinner-border spinner-border-sm"></span> Loading...
+                        </span>
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="resetFilter()">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reset
+                    </button>
+                </div>
+            </form>
+            <div class="mt-2">
+                <small class="text-muted">
+                    <i class="bi bi-info-circle"></i> Showing records from 
+                    <strong id="displayStartDate">@Model.StartDate.ToString("dd MMM yyyy")</strong> to 
+                    <strong id="displayEndDate">@Model.EndDate.ToString("dd MMM yyyy")</strong>
+                    <span id="ajaxIndicator" class="badge bg-info ms-2 d-none">🔐 Using JWT API</span>
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards (Dynamic IDs for AJAX updates) -->
     <div class="row mb-4">
         <div class="col-md-4">
             <div class="card text-white bg-primary">
@@ -35,7 +79,7 @@
                     <h5 class="card-title">
                         <i class="bi bi-calendar-check"></i> Total Classes Held
                     </h5>
-                    <h2 class="mb-0">@Model.TotalClassesHeld</h2>
+                    <h2 class="mb-0" id="totalClassesHeld">@Model.TotalClassesHeld</h2>
                 </div>
             </div>
         </div>
@@ -45,7 +89,7 @@
                     <h5 class="card-title">
                         <i class="bi bi-percent"></i> Class Average
                     </h5>
-                    <h2 class="mb-0">@Model.ClassAveragePercentage%</h2>
+                    <h2 class="mb-0"><span id="classAverage">@Model.ClassAveragePercentage</span>%</h2>
                 </div>
             </div>
         </div>
@@ -55,13 +99,13 @@
                     <h5 class="card-title">
                         <i class="bi bi-people"></i> Total Students
                     </h5>
-                    <h2 class="mb-0">@Model.StudentStats.Count</h2>
+                    <h2 class="mb-0" id="totalStudents">@Model.StudentStats.Count</h2>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Distribution Chart -->
+    <!-- Distribution Chart (Dynamic badges) -->
     <div class="card mb-4">
         <div class="card-body">
             <h5 class="card-title">
@@ -75,17 +119,17 @@
             <div class="row mt-3 text-center">
                 <div class="col-md-4">
                     <span class="badge bg-success" style="font-size: 1.1rem;">
-                        Excellent (≥85%): @Model.GreenCount students
+                        Excellent (≥85%): <span id="greenCount">@Model.GreenCount</span> students
                     </span>
                 </div>
                 <div class="col-md-4">
                     <span class="badge bg-warning text-dark" style="font-size: 1.1rem;">
-                        Good (70-84%): @Model.YellowCount students
+                        Good (70-84%): <span id="yellowCount">@Model.YellowCount</span> students
                     </span>
                 </div>
                 <div class="col-md-4">
                     <span class="badge bg-danger" style="font-size: 1.1rem;">
-                        Poor (<70%): @Model.RedCount students
+                        Poor (<70%): <span id="redCount">@Model.RedCount</span> students
                     </span>
                 </div>
             </div>
@@ -107,12 +151,27 @@
                             <th class="text-center">Present</th>
                             <th class="text-center">Absent</th>
                             <th class="text-center">Leave</th>
+    <!-- Student Details Table (Dynamic tbody) -->
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">
+                <i class="bi bi-table"></i> Student-wise Attendance
+            </h5>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Roll Number</th>
+                            <th>Student Name</th>
+                            <th class="text-center">Present</th>
+                            <th class="text-center">Absent</th>
+                            <th class="text-center">Leave</th>
                             <th class="text-center">Total</th>
                             <th class="text-center">Percentage</th>
                             <th class="text-center">Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="studentTableBody">
                         @foreach (var student in Model.StudentStats)
                         {
                             <tr>
@@ -153,42 +212,195 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     
     <script>
-        // Serialize ViewModel data to JavaScript
-        var chartData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ChartData));
+        // ============================================
+        // 🔐 JWT-BASED REPORT FILTERING WITH FETCH
+        // Dynamic Table Updates - No Page Refresh!
+        // ============================================
 
-        // Create Pie Chart
-        var ctx = document.getElementById('distributionChart').getContext('2d');
-        var distributionChart = new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: chartData.labels,
-                datasets: [{
-                    data: chartData.data,
-                    backgroundColor: chartData.backgroundColors,
-                    borderWidth: 2,
-                    borderColor: '#fff'
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            font: {
-                                size: 14
-                            }
-                        }
-                    },
-                    title: {
-                        display: true,
-                        text: 'Student Performance Distribution',
-                        font: {
-                            size: 16
-                        }
+        // Initial chart data
+        var chartData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ChartData));
+        var distributionChart;
+
+        /** Gets JWT token from cookie */
+        function getJwtToken() {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'JWToken') return value;
+            }
+            return null;
+        }
+
+        /** Sets filter loading state */
+        function setFilterLoading(isLoading) {
+            document.getElementById('applyFilterBtn').disabled = isLoading;
+            document.getElementById('filterText').classList.toggle('d-none', isLoading);
+            document.getElementById('filterSpinner').classList.toggle('d-none', !isLoading);
+        }
+
+        /** Client-side validation */
+        function validateDateRange() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            if (!startDate || !endDate) {
+                alert('Please select both start and end dates.');
+                return false;
+            }
+            
+            if (new Date(startDate) > new Date(endDate)) {
+                alert('Start date cannot be after end date.');
+                return false;
+            }
+            
+            return true;
+        }
+
+        /** Builds table row HTML */
+        function buildTableRow(student) {
+            return `
+                <tr>
+                    <td><strong class="text-primary">${student.rollNumber}</strong></td>
+                    <td>${student.studentName}</td>
+                    <td class="text-center"><span class="badge bg-success">${student.presentCount}</span></td>
+                    <td class="text-center"><span class="badge bg-danger">${student.absentCount}</span></td>
+                    <td class="text-center"><span class="badge bg-warning text-dark">${student.leaveCount}</span></td>
+                    <td class="text-center"><strong>${student.totalClasses}</strong></td>
+                    <td class="text-center">
+                        <span class="badge bg-${student.statusClass}" style="font-size: 1rem;">
+                            ${student.attendancePercentage}%
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <a href="/Reports/StudentReport/${student.enrollmentId}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-file-text"></i> View History
+                        </a>
+                    </td>
+                </tr>
+            `;
+        }
+
+        /** Updates the chart with new data */
+        function updateChart(data) {
+            distributionChart.data.datasets[0].data = data;
+            distributionChart.update();
+        }
+
+        /**
+         * 🚀 MAIN: Apply filter using Fetch API with JWT
+         */
+        async function applyFilter() {
+            // Validate
+            if (!validateDateRange()) return;
+
+            // Get JWT
+            const jwtToken = getJwtToken();
+            if (!jwtToken) {
+                alert('JWT token not found. Please log in again.');
+                return;
+            }
+
+            const courseId = document.getElementById('courseOfferingId').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            setFilterLoading(true);
+
+            try {
+                // 🔐 FETCH API WITH JWT
+                const response = await fetch(`/api/ReportsApi/course/${courseId}?startDate=${startDate}&endDate=${endDate}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${jwtToken}`,  // 🔐 JWT IN HEADER!
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    // Show AJAX indicator
+                    document.getElementById('ajaxIndicator').classList.remove('d-none');
+
+                    // Update summary cards
+                    document.getElementById('totalClassesHeld').textContent = result.data.summary.totalClassesHeld;
+                    document.getElementById('classAverage').textContent = result.data.summary.classAveragePercentage;
+                    document.getElementById('totalStudents').textContent = result.data.summary.totalStudents;
+
+                    // Update distribution counts
+                    document.getElementById('greenCount').textContent = result.data.summary.greenCount;
+                    document.getElementById('yellowCount').textContent = result.data.summary.yellowCount;
+                    document.getElementById('redCount').textContent = result.data.summary.redCount;
+
+                    // Update date display
+                    document.getElementById('displayStartDate').textContent = result.data.dateRange.startDateFormatted;
+                    document.getElementById('displayEndDate').textContent = result.data.dateRange.endDateFormatted;
+
+                    // Update chart
+                    updateChart(result.data.chartData.data);
+
+                    // Update table
+                    const tbody = document.getElementById('studentTableBody');
+                    if (result.data.students.length === 0) {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                                    <p class="mb-0 mt-2">No attendance records found for this date range.</p>
+                                </td>
+                            </tr>
+                        `;
+                    } else {
+                        tbody.innerHTML = result.data.students.map(buildTableRow).join('');
+                    }
+
+                    console.log('✅ Report updated via JWT API');
+                } else {
+                    alert(result.message || 'Failed to fetch report data.');
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                alert('Network error. Please check your connection.');
+            } finally {
+                setFilterLoading(false);
+            }
+        }
+
+        /** Reset filter to last 30 days */
+        function resetFilter() {
+            const today = new Date();
+            const thirtyDaysAgo = new Date(today);
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+            document.getElementById('startDate').value = thirtyDaysAgo.toISOString().split('T')[0];
+            document.getElementById('endDate').value = today.toISOString().split('T')[0];
+            applyFilter();
+        }
+
+        // Initialize Chart
+        document.addEventListener('DOMContentLoaded', function() {
+            var ctx = document.getElementById('distributionChart').getContext('2d');
+            distributionChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        data: chartData.data,
+                        backgroundColor: chartData.backgroundColors,
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { size: 14 } } },
+                        title: { display: true, text: 'Student Performance Distribution', font: { size: 16 } }
                     }
                 }
-            }
+            });
+
+            console.log('🔐 JWT Token:', getJwtToken() ? 'Found ✅' : 'Not Found ❌');
         });
     </script>
 }

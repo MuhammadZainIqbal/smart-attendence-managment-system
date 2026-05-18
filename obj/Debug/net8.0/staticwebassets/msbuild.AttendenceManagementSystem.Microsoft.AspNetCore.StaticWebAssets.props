@@ -1098,5 +1098,41 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\lib\jquery\LICENSE.txt'))</OriginalItemSpec>
     </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\sent-emails\email_20260517_144944_Welcome_to_UET_Lahore,_New_Campus_(KSK)_-_Teacher_Account_Created.html'))">
+      <SourceType>Package</SourceType>
+      <SourceId>AttendenceManagementSystem</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/AttendenceManagementSystem</BasePath>
+      <RelativePath>sent-emails/email_20260517_144944_Welcome_to_UET_Lahore,_New_Campus_(KSK)_-_Teacher_Account_Created.html</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>6jeh9ofbe7</Fingerprint>
+      <Integrity>0hyryFee77w/ifcw+W1u2R5S4SqhBfRLCPvmIcUUwms=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\sent-emails\email_20260517_144944_Welcome_to_UET_Lahore,_New_Campus_(KSK)_-_Teacher_Account_Created.html'))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\sent-emails\email_20260517_153120_Welcome_to_UET_Lahore,_New_Campus_(KSK)_-_Teacher_Account_Created.html'))">
+      <SourceType>Package</SourceType>
+      <SourceId>AttendenceManagementSystem</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/AttendenceManagementSystem</BasePath>
+      <RelativePath>sent-emails/email_20260517_153120_Welcome_to_UET_Lahore,_New_Campus_(KSK)_-_Teacher_Account_Created.html</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <Fingerprint>862wzuyfkm</Fingerprint>
+      <Integrity>AO5I4aOgCvNe3zc71RlptrH6mzHs2BqKIq9P/ng8/K8=</Integrity>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\sent-emails\email_20260517_153120_Welcome_to_UET_Lahore,_New_Campus_(KSK)_-_Teacher_Account_Created.html'))</OriginalItemSpec>
+    </StaticWebAsset>
   </ItemGroup>
 </Project>

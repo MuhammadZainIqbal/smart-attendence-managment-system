@@ -6,6 +6,7 @@
 }
 
 <div class="container mt-4">
+    <!-- Header Section -->
     <div class="row mb-4">
         <div class="col-12">
             <h2><i class="bi bi-check2-square"></i> Mark Attendance</h2>
@@ -37,16 +38,52 @@
         </div>
     </div>
 
-    <form asp-action="MarkAttendance" method="post">
-        <input type="hidden" asp-for="CourseOfferingId" />
-        <input type="hidden" asp-for="ClassScheduleId" />
-        <input type="hidden" asp-for="Date" />
+    <!-- Toast Notification Container -->
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1100">
+        <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    <span id="successMessage">Attendance saved successfully!</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+        <div id="errorToast" class="toast align-items-center text-white bg-danger border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-x-circle-fill me-2"></i>
+                    <span id="errorMessage">An error occurred!</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Form (Using Fetch API instead of form submit) -->
+    <form id="attendanceForm" onsubmit="return false;">
+        <input type="hidden" id="courseOfferingId" value="@Model.CourseOfferingId" />
+        <input type="hidden" id="classScheduleId" value="@Model.ClassScheduleId" />
         
         <div class="card shadow-sm">
-            <div class="card-header bg-dark text-white">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
                 <h5 class="mb-0"><i class="bi bi-list-check"></i> Student Attendance - @Model.Students.Count Student(s)</h5>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-sm btn-outline-light" onclick="markAll(0)">
+                        <i class="bi bi-check-all"></i> All Present
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-light" onclick="markAll(1)">
+                        <i class="bi bi-x-lg"></i> All Absent
+                    </button>
+                </div>
             </div>
             <div class="card-body p-0">
+                <!-- Validation Error Container -->
+                <div id="validationErrors" class="alert alert-danger m-3 d-none">
+                    <h6><i class="bi bi-exclamation-triangle"></i> Validation Errors:</h6>
+                    <ul id="errorList" class="mb-0"></ul>
+                </div>
+
                 <div class="table-responsive">
                     <table class="table table-hover table-striped mb-0">
                         <thead class="table-dark">
@@ -57,32 +94,37 @@
                                 <th style="width: 50%;" class="text-center">Status</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="studentTableBody">
                             @for (int i = 0; i < Model.Students.Count; i++)
                             {
-                                <tr>
+                                <tr data-student-enrollment-id="@Model.Students[i].StudentEnrollmentId">
                                     <td class="align-middle">@(i + 1)</td>
                                     <td class="align-middle">
                                         <strong class="text-success">@Model.Students[i].RollNumber</strong>
-                                        <input type="hidden" asp-for="Students[i].StudentEnrollmentId" />
-                                        <input type="hidden" asp-for="Students[i].StudentId" />
-                                        <input type="hidden" asp-for="Students[i].RollNumber" />
-                                        <input type="hidden" asp-for="Students[i].StudentName" />
                                     </td>
                                     <td class="align-middle">@Model.Students[i].StudentName</td>
                                     <td class="align-middle">
                                         <div class="btn-group w-100" role="group">
-                                            <input type="radio" class="btn-check" name="Students[@i].Status" id="present_@i" value="0" checked />
+                                            <input type="radio" class="btn-check status-radio" 
+                                                   name="student_@Model.Students[i].StudentEnrollmentId" 
+                                                   id="present_@i" value="0" checked 
+                                                   data-enrollment-id="@Model.Students[i].StudentEnrollmentId" />
                                             <label class="btn btn-outline-success" for="present_@i">
                                                 <i class="bi bi-check-circle"></i> Present
                                             </label>
 
-                                            <input type="radio" class="btn-check" name="Students[@i].Status" id="absent_@i" value="1" />
+                                            <input type="radio" class="btn-check status-radio" 
+                                                   name="student_@Model.Students[i].StudentEnrollmentId" 
+                                                   id="absent_@i" value="1"
+                                                   data-enrollment-id="@Model.Students[i].StudentEnrollmentId" />
                                             <label class="btn btn-outline-danger" for="absent_@i">
                                                 <i class="bi bi-x-circle"></i> Absent
                                             </label>
 
-                                            <input type="radio" class="btn-check" name="Students[@i].Status" id="leave_@i" value="2" />
+                                            <input type="radio" class="btn-check status-radio" 
+                                                   name="student_@Model.Students[i].StudentEnrollmentId" 
+                                                   id="leave_@i" value="2"
+                                                   data-enrollment-id="@Model.Students[i].StudentEnrollmentId" />
                                             <label class="btn btn-outline-info" for="leave_@i">
                                                 <i class="bi bi-calendar-x"></i> Leave
                                             </label>
@@ -97,8 +139,12 @@
         </div>
 
         <div class="mt-4 d-flex gap-2">
-            <button type="submit" class="btn btn-primary btn-lg" onclick="return confirm('Are you sure you want to submit attendance? This action cannot be undone.');">
-                <i class="bi bi-save"></i> Submit Attendance
+            <button type="button" id="submitBtn" class="btn btn-primary btn-lg" onclick="submitAttendance()">
+                <span id="submitText"><i class="bi bi-save"></i> Submit Attendance</span>
+                <span id="submitSpinner" class="d-none">
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    Submitting...
+                </span>
             </button>
             <a asp-action="Index" class="btn btn-secondary btn-lg">
                 <i class="bi bi-arrow-left"></i> Back to Dashboard
@@ -107,14 +153,263 @@
     </form>
 </div>
 
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="bi bi-check-circle-fill"></i> Success!</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                <h4 class="mt-3">Attendance Marked Successfully!</h4>
+                <p id="modalSuccessBody" class="text-muted"></p>
+                <div class="row mt-3">
+                    <div class="col-4">
+                        <div class="card bg-success text-white">
+                            <div class="card-body py-2">
+                                <h5 class="mb-0" id="statPresent">0</h5>
+                                <small>Present</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="card bg-danger text-white">
+                            <div class="card-body py-2">
+                                <h5 class="mb-0" id="statAbsent">0</h5>
+                                <small>Absent</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="card bg-info text-white">
+                            <div class="card-body py-2">
+                                <h5 class="mb-0" id="statLeave">0</h5>
+                                <small>Leave</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="@Url.Action("Index", "Teacher")" class="btn btn-primary">
+                    <i class="bi bi-house"></i> Go to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
-        // Optional: Add keyboard shortcuts for quick marking
-        document.addEventListener('keydown', function(event) {
-            if (event.ctrlKey && event.key === 's') {
-                event.preventDefault();
-                document.querySelector('form').submit();
+        // ============================================
+        // 🔐 JWT-BASED ATTENDANCE SUBMISSION WITH FETCH
+        // Modern Enterprise Pattern Implementation
+        // ============================================
+
+        /**
+         * Gets JWT token from cookie.
+         * CRITICAL: Demonstrates explicit JWT usage for API calls.
+         */
+        function getJwtToken() {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'JWToken') {
+                    return value;
+                }
+            }
+            return null;
+        }
+
+        /** Shows toast notification */
+        function showToast(type, message) {
+            const toastId = type === 'success' ? 'successToast' : 'errorToast';
+            const messageId = type === 'success' ? 'successMessage' : 'errorMessage';
+            document.getElementById(messageId).textContent = message;
+            new bootstrap.Toast(document.getElementById(toastId)).show();
+        }
+
+        /** Shows validation errors */
+        function showValidationErrors(errors) {
+            const container = document.getElementById('validationErrors');
+            const list = document.getElementById('errorList');
+            list.innerHTML = '';
+
+            if (errors && typeof errors === 'object') {
+                for (const [field, messages] of Object.entries(errors)) {
+                    messages.forEach(msg => {
+                        const li = document.createElement('li');
+                        li.textContent = `${field}: ${msg}`;
+                        list.appendChild(li);
+                    });
+                }
+            }
+            container.classList.remove('d-none');
+            container.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        /** Hides validation errors */
+        function hideValidationErrors() {
+            document.getElementById('validationErrors').classList.add('d-none');
+        }
+
+        /** Sets loading state */
+        function setLoading(isLoading) {
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = isLoading;
+            document.getElementById('submitText').classList.toggle('d-none', isLoading);
+            document.getElementById('submitSpinner').classList.toggle('d-none', !isLoading);
+        }
+
+        /** Client-Side Validation */
+        function validateForm() {
+            const errors = [];
+            const students = document.querySelectorAll('[data-student-enrollment-id]');
+            
+            if (students.length === 0) {
+                errors.push('No students found to mark attendance.');
+            }
+
+            students.forEach((row, index) => {
+                const enrollmentId = row.dataset.studentEnrollmentId;
+                const selectedRadio = document.querySelector(`input[name="student_${enrollmentId}"]:checked`);
+                if (!selectedRadio) {
+                    errors.push(`Student #${index + 1}: Please select attendance status.`);
+                }
+            });
+
+            return errors;
+        }
+
+        /** Mark all students with specific status */
+        function markAll(status) {
+            document.querySelectorAll(`.status-radio[value="${status}"]`).forEach(radio => radio.checked = true);
+            showToast('success', `All students marked as ${status === 0 ? 'Present' : status === 1 ? 'Absent' : 'Leave'}`);
+        }
+
+        /**
+         * 🚀 MAIN: Submit attendance using Fetch API with JWT
+         * This is the "Modern Enterprise" approach!
+         */
+        async function submitAttendance() {
+            hideValidationErrors();
+
+            // 1. Client-Side Validation
+            const validationErrors = validateForm();
+            if (validationErrors.length > 0) {
+                showValidationErrors({ 'Validation': validationErrors });
+                return;
+            }
+
+            // 2. Get JWT Token (CRITICAL!)
+            const jwtToken = getJwtToken();
+            if (!jwtToken) {
+                showValidationErrors({ 'Authentication': ['JWT token not found. Please log in again.'] });
+                return;
+            }
+
+            // 3. Build payload - with validation
+            const courseOfferingIdRaw = document.getElementById('courseOfferingId').value;
+            const classScheduleIdRaw = document.getElementById('classScheduleId').value;
+            
+            // Debug: Log the raw values
+            console.log('📋 Raw values:', { courseOfferingIdRaw, classScheduleIdRaw });
+            
+            const courseOfferingId = parseInt(courseOfferingIdRaw, 10);
+            const classScheduleId = parseInt(classScheduleIdRaw, 10);
+            
+            // Debug: Log parsed values
+            console.log('📋 Parsed values:', { courseOfferingId, classScheduleId });
+            
+            // Validation: Ensure IDs are valid positive integers
+            if (!classScheduleId || classScheduleId <= 0 || isNaN(classScheduleId)) {
+                showValidationErrors({ 
+                    'ClassScheduleId': [`Invalid class schedule ID: "${classScheduleIdRaw}". Please refresh the page and try again.`] 
+                });
+                return;
+            }
+            
+            if (!courseOfferingId || courseOfferingId <= 0 || isNaN(courseOfferingId)) {
+                showValidationErrors({ 
+                    'CourseOfferingId': [`Invalid course offering ID: "${courseOfferingIdRaw}". Please refresh the page and try again.`] 
+                });
+                return;
+            }
+            
+            const payload = {
+                courseOfferingId: courseOfferingId,
+                classScheduleId: classScheduleId,
+                students: []
+            };
+
+            document.querySelectorAll('[data-student-enrollment-id]').forEach(row => {
+                const enrollmentId = parseInt(row.dataset.studentEnrollmentId);
+                const selectedRadio = document.querySelector(`input[name="student_${enrollmentId}"]:checked`);
+                payload.students.push({
+                    studentEnrollmentId: enrollmentId,
+                    status: parseInt(selectedRadio.value)
+                });
+            });
+
+            // 4. Show loading
+            setLoading(true);
+
+            try {
+                // 5. 🔐 FETCH API CALL WITH JWT BEARER TOKEN
+                const response = await fetch('/api/AttendanceApi/mark', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${jwtToken}`  // 🔐 JWT IN HEADER!
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                // 6. Handle response
+                if (response.ok && result.success) {
+                    // SUCCESS! Show Bootstrap Toast
+                    if (typeof showToast === 'function') {
+                        showToast('✅ Attendance Marked Successfully! Perfectly Executed.', 'success');
+                    }
+                    
+                    document.getElementById('modalSuccessBody').textContent = result.message;
+                    document.getElementById('statPresent').textContent = result.data.present;
+                    document.getElementById('statAbsent').textContent = result.data.absent;
+                    document.getElementById('statLeave').textContent = result.data.leave;
+
+                    new bootstrap.Modal(document.getElementById('successModal')).show();
+
+                    document.getElementById('submitBtn').disabled = true;
+                    document.getElementById('submitText').innerHTML = '<i class="bi bi-check-circle"></i> Submitted';
+                } else {
+                    // ERROR
+                    if (result.errors) {
+                        showValidationErrors(result.errors);
+                    } else {
+                        showToast('error', result.message || 'An error occurred');
+                    }
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                showToast('error', 'Network error. Please check your connection.');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // Keyboard shortcut: Ctrl+S
+        document.addEventListener('keydown', e => {
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                submitAttendance();
             }
         });
+
+        // Debug: Log JWT status
+        console.log('🔐 JWT Token:', getJwtToken() ? 'Found ✅' : 'Not Found ❌');
     </script>
 }

@@ -40,7 +40,119 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- jQuery Validation for Client-Side Form Validation -->
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    
+    <!-- Global Helper Functions -->
+    <script>
+        /**
+         * 🔐 Global Fetch Helper with JWT Authentication
+         * Automatically adds Authorization header from JWToken cookie
+         * Handles 401 errors by redirecting to login
+         */
+        async function fetchWithAuth(url, options = {}) {
+            // Get JWT token from cookie
+            const token = getCookie('JWToken');
+            
+            if (!token) {
+                console.warn('⚠️ JWT token not found. Redirecting to login...');
+                window.location.href = '/Account/Login';
+                throw new Error('No JWT token found');
+            }
+            
+            // Merge default headers with custom ones
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                ...(options.headers || {})
+            };
+            
+            // Perform fetch
+            const response = await fetch(url, {
+                ...options,
+                headers
+            });
+            
+            // Handle 401 Unauthorized
+            if (response.status === 401) {
+                console.error('🔒 Unauthorized. JWT expired or invalid. Redirecting to login...');
+                window.location.href = '/Account/Login';
+                throw new Error('Unauthorized');
+            }
+            
+            return response;
+        }
+        
+        /**
+         * 📍 Get Cookie by Name
+         */
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+        
+        // Show Bootstrap Toast Notification
+        // Parameters: message (string), type ('success', 'error', 'info', 'warning')
+        function showToast(message, type = 'success') {
+            const toastContainer = document.getElementById('toastContainer');
+            if (!toastContainer) {
+                console.error('Toast container not found!');
+                return;
+            }
+            
+            // Icon and color mapping
+            const iconMap = {
+                success: 'bi-check-circle-fill',
+                error: 'bi-x-circle-fill',
+                info: 'bi-info-circle-fill',
+                warning: 'bi-exclamation-triangle-fill'
+            };
+            
+            const bgMap = {
+                success: 'bg-success',
+                error: 'bg-danger',
+                info: 'bg-info',
+                warning: 'bg-warning'
+            };
+            
+            const icon = iconMap[type] || iconMap.success;
+            const bgClass = bgMap[type] || bgMap.success;
+            
+            // Create toast HTML
+            const toastId = `toast-${Date.now()}`;
+            const toastHtml = `
+                <div id="${toastId}" class="toast align-items-center text-white ${bgClass} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="bi ${icon} me-2"></i>
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
+            
+            // Append and show
+            toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+            const toastElement = document.getElementById(toastId);
+            const toast = new bootstrap.Toast(toastElement, { delay: 4000 });
+            toast.show();
+            
+            // Remove from DOM after hidden
+            toastElement.addEventListener('hidden.bs.toast', () => {
+                toastElement.remove();
+            });
+        }
+    </script>
+    
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    
+    <!-- Global Toast Container (Fixed Position) -->
+    <div id="toastContainer" class="position-fixed top-0 end-0 p-3" style="z-index: 9999;"></div>
 </body>
 </html>

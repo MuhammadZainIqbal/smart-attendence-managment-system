@@ -1,6 +1,7 @@
 using AttendenceManagementSystem.Areas.Identity.Data;
 using AttendenceManagementSystem.Models;
 using AttendenceManagementSystem.ViewModels;
+using AttendenceManagementSystem.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -22,17 +23,89 @@ namespace AttendenceManagementSystem.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ApplicationDbContext _context;
         private readonly IEmailSender _emailSender;
+        private readonly ITokenService _tokenService;
+        private readonly IConfiguration _configuration;
+        private readonly ILogger<AccountController> _logger;
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             ApplicationDbContext context,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            ITokenService tokenService,
+            IConfiguration configuration,
+            ILogger<AccountController> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _context = context;
             _emailSender = emailSender;
+            _tokenService = tokenService;
+            _configuration = configuration;
+            _logger = logger;
+        }
+
+        // ==========================================
+        // JWT HELPER METHOD - Generates and sets JWT cookie for ANY user
+        // ==========================================
+        
+        /// <summary>
+        /// Generates JWT token and sets it as a cookie for the specified user.
+        /// Called after successful login for ALL roles (Admin, Teacher, Student).
+        /// NOTE: HttpOnly = false so JavaScript can read JWT for API calls with Authorization header.
+        /// This is the standard pattern for SPAs and Modern Enterprise APIs.
+        /// </summary>
+        private async Task GenerateAndSetJwtCookie(ApplicationUser user, bool rememberMe)
+        {
+            try
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                var jwtToken = _tokenService.GenerateToken(user, roles);
+                
+                if (!string.IsNullOrEmpty(jwtToken))
+                {
+                    // Get JWT expiry from config (default 60 minutes)
+                    var jwtExpiryMinutes = int.Parse(_configuration["Jwt:ExpiryMinutes"] ?? "60");
+                    
+                    // Create cookie options
+                    // IMPORTANT: HttpOnly = false so JavaScript can read the token
+                    // This is required for fetch() to include JWT in Authorization header
+                    // Security is maintained because:
+                    // 1. Identity cookie remains HttpOnly (session security)
+                    // 2. JWT is short-lived and can be revoked
+                    // 3. JWT only grants API access, not session hijacking
+                    var cookieOptions = new CookieOptions
+                    {
+                        HttpOnly = false,                   // MUST be false for JavaScript to read JWT!
+                        Secure = Request.IsHttps,           // DYNAMIC: true on HTTPS, false on HTTP
+                        SameSite = SameSiteMode.Lax,        // Lax allows redirects
+                        IsEssential = true,                 // Required for cookie consent
+                        Path = "/"                          // Available site-wide
+                    };
+                    
+                    // If RememberMe is checked, set persistent cookie; otherwise session cookie
+                    if (rememberMe)
+                    {
+                        cookieOptions.Expires = DateTimeOffset.UtcNow.AddMinutes(jwtExpiryMinutes);
+                    }
+                    
+                    // Append the JWT cookie
+                    Response.Cookies.Append("JWToken", jwtToken, cookieOptions);
+                    
+                    _logger.LogInformation(
+                        "🔐 JWT Token generated for User: {UserId}, Role: {Role}, InstituteId: {InstituteId}, RememberMe: {RememberMe}",
+                        user.Id, string.Join(",", roles), user.InstituteId, rememberMe);
+                }
+                else
+                {
+                    _logger.LogWarning("JWT Token generation returned null for User: {UserId}", user.Id);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log error but don't prevent login - JWT is supplementary
+                _logger.LogError(ex, "Failed to generate JWT token for User: {UserId}", user.Id);
+            }
         }
 
         // ==========================================
@@ -62,63 +135,85 @@ namespace AttendenceManagementSystem.Controllers
                 return View(model);
             }
 
-            // Use a transaction to ensure atomicity
-            using var transaction = await _context.Database.BeginTransactionAsync();
+            // CRITICAL: Disable Global Query Filter during signup
+            var originalInstituteId = _context.CurrentInstituteId;
+            _context.CurrentInstituteId = null;
+
+            string instituteCode = null;
+            Institute institute = null;
+            ApplicationUser user = null;
+            IdentityResult result = null;
+            bool signUpSucceeded = false;
 
             try
             {
-                // CRITICAL: Disable Global Query Filter during signup
-                var originalInstituteId = _context.CurrentInstituteId;
-                _context.CurrentInstituteId = null;
-
-                // Generate unique Institute Code
-                string instituteCode = await GenerateUniqueInstituteCode(model.InstituteName);
-
-                // Create new Institute
-                var institute = new Institute
+                var strategy = _context.Database.CreateExecutionStrategy();
+                await strategy.ExecuteAsync(async () =>
                 {
-                    Name = model.InstituteName,
-                    Code = instituteCode,
-                    AdminEmail = model.Email,
-                    CreatedAt = DateTime.UtcNow
-                };
+                    using (var transaction = await _context.Database.BeginTransactionAsync())
+                    {
+                        // Generate unique Institute Code
+                        instituteCode = await GenerateUniqueInstituteCode(model.InstituteName);
 
-                _context.Institutes.Add(institute);
-                await _context.SaveChangesAsync();
+                        // Create new Institute
+                        institute = new Institute
+                        {
+                            Name = model.InstituteName,
+                            Code = instituteCode,
+                            AdminEmail = model.Email,
+                            CreatedAt = DateTime.UtcNow
+                        };
 
-                // Create Admin User with EmailConfirmed = FALSE
-                var user = new ApplicationUser
+                        _context.Institutes.Add(institute);
+                        await _context.SaveChangesAsync();
+
+                        // Create Admin User with EmailConfirmed = FALSE
+                        user = new ApplicationUser
+                        {
+                            UserName = model.Email,
+                            Email = model.Email,
+                            FullName = model.FullName,
+                            InstituteId = institute.Id,
+                            IsPasswordChanged = true,
+                            EmailConfirmed = false // MUST verify email via OTP
+                        };
+
+                        result = await _userManager.CreateAsync(user, model.Password);
+
+                        if (result.Succeeded)
+                        {
+                            // Assign Admin role
+                            await _userManager.AddToRoleAsync(user, "Admin");
+
+                            // Generate 6-digit OTP
+                            string otpCode = GenerateOTP();
+
+                            // Store OTP as authentication token (expires in 10 minutes)
+                            await _userManager.SetAuthenticationTokenAsync(
+                                user,
+                                "EmailVerification",
+                                "OTP",
+                                otpCode);
+
+                            // Commit transaction BEFORE sending email
+                            await transaction.CommitAsync();
+                            signUpSucceeded = true;
+                        }
+                        else
+                        {
+                            await transaction.RollbackAsync();
+                            signUpSucceeded = false;
+                        }
+                    }
+                });
+
+                if (signUpSucceeded)
                 {
-                    UserName = model.Email,
-                    Email = model.Email,
-                    FullName = model.FullName,
-                    InstituteId = institute.Id,
-                    IsPasswordChanged = true,
-                    EmailConfirmed = false // MUST verify email via OTP
-                };
-
-                var result = await _userManager.CreateAsync(user, model.Password);
-
-                if (result.Succeeded)
-                {
-                    // Assign Admin role
-                    await _userManager.AddToRoleAsync(user, "Admin");
-
-                    // Generate 6-digit OTP
-                    string otp = GenerateOTP();
-
-                    // Store OTP as authentication token (expires in 10 minutes)
-                    await _userManager.SetAuthenticationTokenAsync(
-                        user,
-                        "EmailVerification",
-                        "OTP",
-                        otp);
-
-                    // Commit transaction BEFORE sending email
-                    await transaction.CommitAsync();
-
                     // Restore context
                     _context.CurrentInstituteId = originalInstituteId;
+
+                    // Retrieve the OTP that was saved during the successful transaction block
+                    var otp = await _userManager.GetAuthenticationTokenAsync(user, "EmailVerification", "OTP");
 
                     // Send OTP via Email (after commit, so no rollback needed)
                     bool emailSent = false;
@@ -171,30 +266,22 @@ namespace AttendenceManagementSystem.Controllers
                     return RedirectToAction("VerifyEmail", new { userId = user.Id });
                 }
 
-                // If user creation failed, rollback
-                await transaction.RollbackAsync();
+                // If user creation failed, restore context and add errors
                 _context.CurrentInstituteId = originalInstituteId;
 
-                foreach (var error in result.Errors)
+                if (result != null)
                 {
-                    ModelState.AddModelError(string.Empty, error.Description);
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
                 }
 
                 return View(model);
             }
             catch (Exception ex)
             {
-                // Try to rollback, but catch any errors if transaction already completed
-                try
-                {
-                    await transaction.RollbackAsync();
-                }
-                catch
-                {
-                    // Transaction already completed, ignore rollback error
-                }
-                
-                _context.CurrentInstituteId = null; // Reset context
+                _context.CurrentInstituteId = originalInstituteId; // Reset context
                 var innerMessage = ex.InnerException?.Message ?? ex.Message;
                 ModelState.AddModelError(string.Empty, $"An error occurred during registration: {innerMessage}");
                 return View(model);
@@ -258,19 +345,23 @@ namespace AttendenceManagementSystem.Controllers
 
             if (result.Succeeded)
             {
-                // Step 5: Check if password change is required
+                // Step 5: Set CurrentInstituteId in DbContext for Global Query Filter
+                _context.CurrentInstituteId = user.InstituteId;
+
+                // Step 6: ALWAYS Generate JWT Token (for ALL users: Admin, Teacher, Student)
+                await GenerateAndSetJwtCookie(user, model.RememberMe);
+
+                // Step 7: Check if password change is required
                 if (!user.IsPasswordChanged)
                 {
                     // Force password change for users created by Admin
+                    // JWT is already generated above, so API calls work even during password change
                     return RedirectToAction(nameof(ChangePassword));
                 }
 
-                // Step 6: Set CurrentInstituteId in DbContext for Global Query Filter
-                _context.CurrentInstituteId = user.InstituteId;
-
-                // Step 7: Redirect based on role
+                // Step 8: Redirect based on role
                 var roles = await _userManager.GetRolesAsync(user);
-
+                
                 if (roles.Contains("Admin"))
                     return RedirectToAction("Index", "Admin");
                 else if (roles.Contains("Teacher"))
@@ -290,6 +381,155 @@ namespace AttendenceManagementSystem.Controllers
 
             ModelState.AddModelError(string.Empty, "Invalid login attempt.");
             return View(model);
+        }
+
+        // ==========================================
+        // AJAX LOGIN API (Modern No-Refresh Login)
+        // ==========================================
+        
+        /// <summary>
+        /// POST: /Account/LoginAjax
+        /// AJAX endpoint for modern login without page refresh.
+        /// Returns JSON with redirect URL based on user role.
+        /// </summary>
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> LoginAjax([FromForm] LoginViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState
+                    .Where(x => x.Value?.Errors.Count > 0)
+                    .ToDictionary(
+                        kvp => kvp.Key,
+                        kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).FirstOrDefault() ?? string.Empty
+                    );
+
+                return Json(new
+                {
+                    success = false,
+                    message = "Validation failed. Please check your input.",
+                    errors
+                });
+            }
+
+            // Step 1: Verify Institute Code exists
+            var institute = await _context.Institutes
+                .FirstOrDefaultAsync(i => i.Code == model.InstituteCode);
+
+            if (institute == null)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Invalid Institute Code.",
+                    errors = new Dictionary<string, string>
+                    {
+                        { "InstituteCode", "Invalid Institute Code." }
+                    }
+                });
+            }
+
+            // Step 2: Find user by email
+            var user = await _userManager.FindByEmailAsync(model.Email);
+
+            if (user == null)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Invalid login credentials.",
+                    errors = new Dictionary<string, string>
+                    {
+                        { "Email", "Invalid email or password." }
+                    }
+                });
+            }
+
+            // Step 3: CRITICAL SECURITY CHECK - Verify user belongs to this Institute
+            if (user.InstituteId != institute.Id)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Invalid login credentials.",
+                    errors = new Dictionary<string, string>
+                    {
+                        { "InstituteCode", "User does not belong to this institute." }
+                    }
+                });
+            }
+
+            // Step 4: Verify password and sign in
+            var result = await _signInManager.PasswordSignInAsync(
+                user.UserName ?? user.Email ?? string.Empty,
+                model.Password,
+                model.RememberMe,
+                lockoutOnFailure: false);
+
+            if (result.Succeeded)
+            {
+                // Step 5: Set CurrentInstituteId in DbContext for Global Query Filter
+                _context.CurrentInstituteId = user.InstituteId;
+
+                // Step 6: Generate JWT Token
+                await GenerateAndSetJwtCookie(user, model.RememberMe);
+
+                // Step 7: Check if password change is required
+                if (!user.IsPasswordChanged)
+                {
+                    return Json(new
+                    {
+                        success = true,
+                        message = "Login successful. Password change required.",
+                        redirectUrl = Url.Action(nameof(ChangePassword))
+                    });
+                }
+
+                // Step 8: Determine redirect URL based on role
+                var roles = await _userManager.GetRolesAsync(user);
+                string redirectUrl;
+
+                if (roles.Contains("Admin"))
+                    redirectUrl = Url.Action("Index", "Admin") ?? "/Admin";
+                else if (roles.Contains("Teacher"))
+                    redirectUrl = Url.Action("Index", "Teacher") ?? "/Teacher";
+                else if (roles.Contains("Student"))
+                    redirectUrl = Url.Action("Index", "Student") ?? "/Student";
+                else
+                    redirectUrl = "/";
+
+                return Json(new
+                {
+                    success = true,
+                    message = $"Welcome back, {user.FullName}!",
+                    redirectUrl
+                });
+            }
+
+            if (result.IsLockedOut)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Account locked out.",
+                    errors = new Dictionary<string, string>
+                    {
+                        { "Account", "This account has been locked out." }
+                    }
+                });
+            }
+
+            return Json(new
+            {
+                success = false,
+                message = "Invalid login attempt.",
+                errors = new Dictionary<string, string>
+                {
+                    { "Password", "Invalid email or password." }
+                }
+            });
         }
 
         // ==========================================
@@ -321,6 +561,9 @@ namespace AttendenceManagementSystem.Controllers
                     // Sign in the user
                     await _signInManager.SignInAsync(user, isPersistent: false);
 
+                    // Generate JWT Token for Admin after signup
+                    await GenerateAndSetJwtCookie(user, false);
+
                     TempData["SuccessMessage"] = $"Welcome! Your institute has been registered successfully.";
 
                     // Redirect to Admin Dashboard
@@ -339,7 +582,20 @@ namespace AttendenceManagementSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
+            // Sign out from Identity (clears Identity cookie)
             await _signInManager.SignOutAsync();
+            
+            // CRITICAL: Also clear the JWT cookie
+            Response.Cookies.Delete("JWToken", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = Request.IsHttps,
+                SameSite = SameSiteMode.Lax,
+                Path = "/"
+            });
+            
+            _logger.LogInformation("User logged out. Identity and JWT cookies cleared.");
+            
             return RedirectToAction("Login", "Account");
         }
 
@@ -376,6 +632,9 @@ namespace AttendenceManagementSystem.Controllers
 
                 // Sign in again to refresh the security stamp
                 await _signInManager.RefreshSignInAsync(user);
+
+                // Regenerate JWT Token after password change (refresh with new security stamp)
+                await GenerateAndSetJwtCookie(user, false);
 
                 TempData["SuccessMessage"] = "Your password has been changed successfully.";
 

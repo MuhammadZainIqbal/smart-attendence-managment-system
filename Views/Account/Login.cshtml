@@ -23,8 +23,10 @@
                         <strong>New Admin?</strong> After registration, your Institute Code is shown on the success page and your dashboard.
                     </div>
 
-                    <form asp-controller="Account" asp-action="Login" method="post">
-                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                    <form id="loginForm" asp-controller="Account" asp-action="LoginAjax" method="post">
+                        <div id="loginErrors" class="alert alert-danger d-none" role="alert">
+                            <ul id="errorList" class="mb-0"></ul>
+                        </div>
 
                         <div class="mb-3">
                             <label asp-for="InstituteCode" class="form-label fw-bold"></label>
@@ -35,7 +37,8 @@
                                 <input asp-for="InstituteCode" 
                                        class="form-control form-control-lg" 
                                        placeholder="e.g., PUN-4821" 
-                                       style="text-transform: uppercase;" />
+                                       style="text-transform: uppercase;"
+                                       required />
                             </div>
                             <span asp-validation-for="InstituteCode" class="text-danger small"></span>
                             <small class="form-text text-muted">
@@ -45,13 +48,13 @@
 
                         <div class="mb-3">
                             <label asp-for="Email" class="form-label fw-bold"></label>
-                            <input asp-for="Email" class="form-control" placeholder="your.email@example.com" />
+                            <input asp-for="Email" class="form-control" placeholder="your.email@example.com" required />
                             <span asp-validation-for="Email" class="text-danger small"></span>
                         </div>
 
                         <div class="mb-3">
                             <label asp-for="Password" class="form-label fw-bold"></label>
-                            <input asp-for="Password" class="form-control" placeholder="Enter your password" />
+                            <input asp-for="Password" class="form-control" placeholder="Enter your password" required />
                             <span asp-validation-for="Password" class="text-danger small"></span>
                         </div>
 
@@ -61,8 +64,14 @@
                         </div>
 
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-success btn-lg">
-                                <i class="bi bi-box-arrow-in-right"></i> Login
+                            <button type="submit" id="loginBtn" class="btn btn-success btn-lg">
+                                <span id="loginText">
+                                    <i class="bi bi-box-arrow-in-right"></i> Login
+                                </span>
+                                <span id="loginSpinner" class="d-none">
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                    Verifying credentials...
+                                </span>
                             </button>
                         </div>
                     </form>
@@ -90,4 +99,97 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        $(document).ready(function () {
+            const $form = $('#loginForm');
+            const $loginBtn = $('#loginBtn');
+            const $loginText = $('#loginText');
+            const $loginSpinner = $('#loginSpinner');
+            const $loginErrors = $('#loginErrors');
+            const $errorList = $('#errorList');
+
+            // AJAX Login Handler
+            $form.on('submit', async function (e) {
+                e.preventDefault();
+
+                // Clear previous errors
+                $loginErrors.addClass('d-none');
+                $errorList.empty();
+                $('.is-invalid').removeClass('is-invalid');
+                $('.invalid-feedback').remove();
+
+                // Show loading state
+                $loginBtn.prop('disabled', true);
+                $loginText.addClass('d-none');
+                $loginSpinner.removeClass('d-none');
+
+                try {
+                    // Get form data
+                    const formData = new FormData(this);
+                    
+                    // Submit via AJAX
+                    const response = await fetch($form.attr('action'), {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // Show success toast
+                        if (typeof showToast === 'function') {
+                            showToast(result.message || 'Login successful!', 'success');
+                        }
+                        
+                        // Redirect after short delay
+                        setTimeout(() => {
+                            window.location.href = result.redirectUrl;
+                        }, 500);
+                    } else {
+                        // Display errors
+                        if (result.errors) {
+                            let hasFieldErrors = false;
+                            
+                            for (const [field, message] of Object.entries(result.errors)) {
+                                // Try to find the specific field
+                                const $field = $(`[name="${field}"]`);
+                                
+                                if ($field.length > 0) {
+                                    hasFieldErrors = true;
+                                    $field.addClass('is-invalid');
+                                    $field.after(`<div class="invalid-feedback d-block">${message}</div>`);
+                                } else {
+                                    // Add to error list
+                                    $errorList.append(`<li>${message}</li>`);
+                                }
+                            }
+                            
+                            if ($errorList.children().length > 0) {
+                                $loginErrors.removeClass('d-none');
+                            }
+                        } else {
+                            // Generic error
+                            $errorList.append(`<li>${result.message || 'Login failed. Please try again.'}</li>`);
+                            $loginErrors.removeClass('d-none');
+                        }
+
+                        // Reset button state
+                        $loginBtn.prop('disabled', false);
+                        $loginText.removeClass('d-none');
+                        $loginSpinner.addClass('d-none');
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    $errorList.append('<li>Network error. Please check your connection and try again.</li>');
+                    $loginErrors.removeClass('d-none');
+
+                    // Reset button state
+                    $loginBtn.prop('disabled', false);
+                    $loginText.removeClass('d-none');
+                    $loginSpinner.addClass('d-none');
+                }
+            });
+        });
+    </script>
 }

@@ -15,6 +15,10 @@ namespace AttendenceManagementSystem.ViewModels
         public string BatchName { get; set; } = string.Empty;
         public string SectionName { get; set; } = string.Empty;
         
+        // Date Filter Properties
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        
         // Aggregates
         public int TotalClassesHeld { get; set; }
         public double ClassAveragePercentage { get; set; }
@@ -72,6 +76,10 @@ namespace AttendenceManagementSystem.ViewModels
         public string SubjectName { get; set; } = string.Empty;
         public string BatchName { get; set; } = string.Empty;
         public string SectionName { get; set; } = string.Empty;
+        
+        // Date Filter Properties
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
         
         // Aggregates
         public int PresentCount { get; set; }

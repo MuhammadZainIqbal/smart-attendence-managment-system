@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using AttendenceManagementSystem.Areas.Identity.Data;
+using AttendenceManagementSystem.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -21,11 +22,22 @@ namespace AttendenceManagementSystem.Areas.Identity.Pages.Account
     public class LoginModel : PageModel
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ITokenService _tokenService;
+        private readonly IConfiguration _configuration;
         private readonly ILogger<LoginModel> _logger;
 
-        public LoginModel(SignInManager<ApplicationUser> signInManager, ILogger<LoginModel> logger)
+        public LoginModel(
+            SignInManager<ApplicationUser> signInManager, 
+            UserManager<ApplicationUser> userManager,
+            ITokenService tokenService,
+            IConfiguration configuration,
+            ILogger<LoginModel> logger)
         {
             _signInManager = signInManager;
+            _userManager = userManager;
+            _tokenService = tokenService;
+            _configuration = configuration;
             _logger = logger;
         }
 
@@ -116,6 +128,80 @@ namespace AttendenceManagementSystem.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
+                    
+                    // --- JWT Token Generation (Multi-Tenant) ---
+                    try
+                    {
+                        var user = await _userManager.FindByEmailAsync(Input.Email);
+                        if (user != null)
+                        {
+                            var roles = await _userManager.GetRolesAsync(user);
+                            
+                            // DEBUG: Add header to show we reached this point
+                            Response.Headers.Append("X-JWT-Debug-Step1", "UserFound-" + user.Id);
+                            
+                            var jwtToken = _tokenService.GenerateToken(user, roles);
+                            
+                            // DEBUG: Verify token was generated
+                            if (string.IsNullOrEmpty(jwtToken))
+                            {
+                                Response.Headers.Append("X-JWT-Debug-Error", "TokenGenerationReturnedNull");
+                                _logger.LogError("JWT Token generation returned null or empty!");
+                            }
+                            else
+                            {
+                                Response.Headers.Append("X-JWT-Debug-Step2", $"TokenGenerated-Len:{jwtToken.Length}");
+                                
+                                // Get JWT expiry from config (default 60 minutes)
+                                var jwtExpiryMinutes = int.Parse(_configuration["Jwt:ExpiryMinutes"] ?? "60");
+                                
+                                // Determine if we're on HTTPS
+                                var isHttps = Request.IsHttps;
+                                
+                                // Create cookie options matching JWT expiry
+                                var cookieOptions = new CookieOptions
+                                {
+                                    HttpOnly = true,                    // Prevent XSS attacks - JS cannot read
+                                    Secure = isHttps,                   // DYNAMIC: true on HTTPS, false on HTTP
+                                    SameSite = SameSiteMode.Lax,        // Lax allows redirects, Strict blocks them
+                                    IsEssential = true,                 // Required for cookie consent
+                                    Path = "/"                          // Available site-wide
+                                };
+                                
+                                // If RememberMe is checked, set persistent cookie; otherwise session cookie
+                                if (Input.RememberMe)
+                                {
+                                    cookieOptions.Expires = DateTimeOffset.UtcNow.AddMinutes(jwtExpiryMinutes);
+                                }
+                                // If RememberMe is NOT checked, don't set Expires - cookie will be session-only
+                                
+                                // DEBUG: Add header showing cookie options
+                                Response.Headers.Append("X-JWT-Debug-Step3", $"CookieOpts-Secure:{isHttps}-Expires:{(Input.RememberMe ? jwtExpiryMinutes + "min" : "Session")}");
+                                
+                                // Append the JWT cookie
+                                Response.Cookies.Append("JWToken", jwtToken, cookieOptions);
+                                
+                                Response.Headers.Append("X-JWT-Debug-Step4", "CookieAppended");
+                                
+                                _logger.LogWarning(
+                                    "✅ JWT COOKIE APPENDED: User={UserId}, InstituteId={InstituteId}, RememberMe={RememberMe}, TokenLength={TokenLength}", 
+                                    user.Id, user.InstituteId, Input.RememberMe, jwtToken?.Length ?? 0);
+                            }
+                        }
+                        else
+                        {
+                            Response.Headers.Append("X-JWT-Debug-Error", "UserNotFound");
+                            _logger.LogWarning("JWT Token generation skipped - user not found after login.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log error but don't prevent login - JWT is supplementary
+                        Response.Headers.Append("X-JWT-Debug-Exception", ex.Message.Substring(0, Math.Min(100, ex.Message.Length)));
+                        _logger.LogError(ex, "Failed to generate JWT token during login.");
+                    }
+                    // ---------------------------------------------
+                    
                     return LocalRedirect(returnUrl);
                 }
                 if (result.RequiresTwoFactor)

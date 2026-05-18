@@ -211,23 +211,41 @@ namespace AttendenceManagementSystem.Controllers
 
             try
             {
-                // Delete associated enrollments first
+                // 1. Delete associated AttendanceRecords first
+                var attendanceRecords = await _context.AttendanceRecords
+                    .IgnoreQueryFilters()
+                    .Where(ar => ar.CourseOfferingId == id)
+                    .ToListAsync();
+                _context.AttendanceRecords.RemoveRange(attendanceRecords);
+                await _context.SaveChangesAsync();
+
+                // 2. Delete associated ClassSchedules next
+                var classSchedules = await _context.ClassSchedules
+                    .IgnoreQueryFilters()
+                    .Where(cs => cs.CourseOfferingId == id)
+                    .ToListAsync();
+                _context.ClassSchedules.RemoveRange(classSchedules);
+                await _context.SaveChangesAsync();
+
+                // 3. Delete associated enrollments
                 var enrollments = await _context.StudentEnrollments
+                    .IgnoreQueryFilters()
                     .Where(se => se.CourseOfferingId == id)
                     .ToListAsync();
-
                 _context.StudentEnrollments.RemoveRange(enrollments);
+                await _context.SaveChangesAsync();
 
-                // Delete the course offering
+                // 4. Delete the course offering
                 _context.CourseOfferings.Remove(courseOffering);
                 await _context.SaveChangesAsync();
 
-                SetSuccessMessage($"Course Offering deleted successfully. Removed {enrollments.Count} student enrollment(s).");
+                SetSuccessMessage($"Course Offering deleted successfully. Removed {enrollments.Count} student enrollment(s), {classSchedules.Count} class schedule(s), and {attendanceRecords.Count} attendance record(s).");
                 return RedirectToAction(nameof(Index));
             }
-            catch (DbUpdateException)
+            catch (Exception ex)
             {
-                SetErrorMessage("Cannot delete this course offering. It may have associated class schedules or attendance records.");
+                var innerMessage = ex.InnerException?.Message ?? ex.Message;
+                SetErrorMessage($"Cannot delete this course offering: {innerMessage}");
                 return RedirectToAction(nameof(Delete), new { id });
             }
         }

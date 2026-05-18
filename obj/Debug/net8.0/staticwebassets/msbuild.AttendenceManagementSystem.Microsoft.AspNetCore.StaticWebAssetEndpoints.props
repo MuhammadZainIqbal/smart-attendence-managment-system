@@ -732,5 +732,29 @@
       <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-hjIBkvmgxQXbNXK3B9YQ3t06RwLuQSQzC/dpvuB/lMk="}]]]></EndpointProperties>
       <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"1117"},{"Name":"Content-Type","Value":"text/plain"},{"Name":"ETag","Value":"\u0022hjIBkvmgxQXbNXK3B9YQ3t06RwLuQSQzC/dpvuB/lMk=\u0022"},{"Name":"Last-Modified","Value":"Sun, 23 Nov 2025 07:42:33 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
+    <StaticWebAssetEndpoint Include="_content/AttendenceManagementSystem/sent-emails/email_20260517_144944_Welcome_to_UET_Lahore,_New_Campus_(KSK)_-_Teacher_Account_Created.6jeh9ofbe7.html">
+      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\sent-emails\email_20260517_144944_Welcome_to_UET_Lahore,_New_Campus_(KSK)_-_Teacher_Account_Created.html'))</AssetFile>
+      <Selectors><![CDATA[[]]]></Selectors>
+      <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"6jeh9ofbe7"},{"Name":"integrity","Value":"sha256-0hyryFee77w/ifcw\u002BW1u2R5S4SqhBfRLCPvmIcUUwms="},{"Name":"label","Value":"_content/AttendenceManagementSystem/sent-emails/email_20260517_144944_Welcome_to_UET_Lahore,_New_Campus_(KSK)_-_Teacher_Account_Created.html"}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"2526"},{"Name":"Content-Type","Value":"text/html"},{"Name":"ETag","Value":"\u00220hyryFee77w/ifcw\u002BW1u2R5S4SqhBfRLCPvmIcUUwms=\u0022"},{"Name":"Last-Modified","Value":"Sun, 17 May 2026 09:49:44 GMT"}]]]></ResponseHeaders>
+    </StaticWebAssetEndpoint>
+    <StaticWebAssetEndpoint Include="_content/AttendenceManagementSystem/sent-emails/email_20260517_144944_Welcome_to_UET_Lahore,_New_Campus_(KSK)_-_Teacher_Account_Created.html">
+      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\sent-emails\email_20260517_144944_Welcome_to_UET_Lahore,_New_Campus_(KSK)_-_Teacher_Account_Created.html'))</AssetFile>
+      <Selectors><![CDATA[[]]]></Selectors>
+      <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-0hyryFee77w/ifcw\u002BW1u2R5S4SqhBfRLCPvmIcUUwms="}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"2526"},{"Name":"Content-Type","Value":"text/html"},{"Name":"ETag","Value":"\u00220hyryFee77w/ifcw\u002BW1u2R5S4SqhBfRLCPvmIcUUwms=\u0022"},{"Name":"Last-Modified","Value":"Sun, 17 May 2026 09:49:44 GMT"}]]]></ResponseHeaders>
+    </StaticWebAssetEndpoint>
+    <StaticWebAssetEndpoint Include="_content/AttendenceManagementSystem/sent-emails/email_20260517_153120_Welcome_to_UET_Lahore,_New_Campus_(KSK)_-_Teacher_Account_Created.862wzuyfkm.html">
+      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\sent-emails\email_20260517_153120_Welcome_to_UET_Lahore,_New_Campus_(KSK)_-_Teacher_Account_Created.html'))</AssetFile>
+      <Selectors><![CDATA[[]]]></Selectors>
+      <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"862wzuyfkm"},{"Name":"integrity","Value":"sha256-AO5I4aOgCvNe3zc71RlptrH6mzHs2BqKIq9P/ng8/K8="},{"Name":"label","Value":"_content/AttendenceManagementSystem/sent-emails/email_20260517_153120_Welcome_to_UET_Lahore,_New_Campus_(KSK)_-_Teacher_Account_Created.html"}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"2526"},{"Name":"Content-Type","Value":"text/html"},{"Name":"ETag","Value":"\u0022AO5I4aOgCvNe3zc71RlptrH6mzHs2BqKIq9P/ng8/K8=\u0022"},{"Name":"Last-Modified","Value":"Sun, 17 May 2026 10:31:20 GMT"}]]]></ResponseHeaders>
+    </StaticWebAssetEndpoint>
+    <StaticWebAssetEndpoint Include="_content/AttendenceManagementSystem/sent-emails/email_20260517_153120_Welcome_to_UET_Lahore,_New_Campus_(KSK)_-_Teacher_Account_Created.html">
+      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\sent-emails\email_20260517_153120_Welcome_to_UET_Lahore,_New_Campus_(KSK)_-_Teacher_Account_Created.html'))</AssetFile>
+      <Selectors><![CDATA[[]]]></Selectors>
+      <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-AO5I4aOgCvNe3zc71RlptrH6mzHs2BqKIq9P/ng8/K8="}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"2526"},{"Name":"Content-Type","Value":"text/html"},{"Name":"ETag","Value":"\u0022AO5I4aOgCvNe3zc71RlptrH6mzHs2BqKIq9P/ng8/K8=\u0022"},{"Name":"Last-Modified","Value":"Sun, 17 May 2026 10:31:20 GMT"}]]]></ResponseHeaders>
+    </StaticWebAssetEndpoint>
   </ItemGroup>
 </Project>

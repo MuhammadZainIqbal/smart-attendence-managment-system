@@ -231,6 +231,7 @@ namespace AttendenceManagementSystem.Controllers
                     // Send welcome email with credentials
                     try
                     {
+                        var loginUrl = $"{Request.Scheme}://{Request.Host}/Account/Login";
                         string emailSubject = $"Welcome to {institute?.Name} - Student Account Created";
                         string emailBody = $@"
                             <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
@@ -256,7 +257,7 @@ namespace AttendenceManagementSystem.Controllers
                                     <p style='margin: 0;'><strong>⚠️ Important:</strong> You will be required to change this password when you first log in.</p>
                                 </div>
 
-                                <p><strong>Login URL:</strong> <a href='https://localhost:44370/Account/Login'>Click here to login</a></p>
+                                <p><strong>Login URL:</strong> <a href='{loginUrl}'>Click here to login</a></p>
 
                                 <hr>
                                 <p>If you have any questions, please contact your administrator.</p>

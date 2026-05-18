@@ -7223,6 +7223,170 @@
           "Value": "sha256-OZVI+w57FGwS9boYCZpH1ZSpcP7pYhLu4KtIUvPlZ4I="
         }
       ]
+    },
+    {
+      "Route": "sent-emails/email_20260517_144944_Welcome_to_UET_Lahore,_New_Campus_(KSK)_-_Teacher_Account_Created.6jeh9ofbe7.html",
+      "AssetFile": "sent-emails/email_20260517_144944_Welcome_to_UET_Lahore,_New_Campus_(KSK)_-_Teacher_Account_Created.html",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "2526"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/html"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"0hyryFee77w/ifcw+W1u2R5S4SqhBfRLCPvmIcUUwms=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sun, 17 May 2026 09:49:44 GMT"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "6jeh9ofbe7"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-0hyryFee77w/ifcw+W1u2R5S4SqhBfRLCPvmIcUUwms="
+        },
+        {
+          "Name": "label",
+          "Value": "sent-emails/email_20260517_144944_Welcome_to_UET_Lahore,_New_Campus_(KSK)_-_Teacher_Account_Created.html"
+        }
+      ]
+    },
+    {
+      "Route": "sent-emails/email_20260517_144944_Welcome_to_UET_Lahore,_New_Campus_(KSK)_-_Teacher_Account_Created.html",
+      "AssetFile": "sent-emails/email_20260517_144944_Welcome_to_UET_Lahore,_New_Campus_(KSK)_-_Teacher_Account_Created.html",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "2526"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/html"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"0hyryFee77w/ifcw+W1u2R5S4SqhBfRLCPvmIcUUwms=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sun, 17 May 2026 09:49:44 GMT"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-0hyryFee77w/ifcw+W1u2R5S4SqhBfRLCPvmIcUUwms="
+        }
+      ]
+    },
+    {
+      "Route": "sent-emails/email_20260517_153120_Welcome_to_UET_Lahore,_New_Campus_(KSK)_-_Teacher_Account_Created.862wzuyfkm.html",
+      "AssetFile": "sent-emails/email_20260517_153120_Welcome_to_UET_Lahore,_New_Campus_(KSK)_-_Teacher_Account_Created.html",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "2526"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/html"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"AO5I4aOgCvNe3zc71RlptrH6mzHs2BqKIq9P/ng8/K8=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sun, 17 May 2026 10:31:20 GMT"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "862wzuyfkm"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-AO5I4aOgCvNe3zc71RlptrH6mzHs2BqKIq9P/ng8/K8="
+        },
+        {
+          "Name": "label",
+          "Value": "sent-emails/email_20260517_153120_Welcome_to_UET_Lahore,_New_Campus_(KSK)_-_Teacher_Account_Created.html"
+        }
+      ]
+    },
+    {
+      "Route": "sent-emails/email_20260517_153120_Welcome_to_UET_Lahore,_New_Campus_(KSK)_-_Teacher_Account_Created.html",
+      "AssetFile": "sent-emails/email_20260517_153120_Welcome_to_UET_Lahore,_New_Campus_(KSK)_-_Teacher_Account_Created.html",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "2526"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/html"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"AO5I4aOgCvNe3zc71RlptrH6mzHs2BqKIq9P/ng8/K8=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sun, 17 May 2026 10:31:20 GMT"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-AO5I4aOgCvNe3zc71RlptrH6mzHs2BqKIq9P/ng8/K8="
+        }
+      ]
     }
   ]
 }

@@ -1,0 +1,164 @@
+@{
+    ViewData["Title"] = "JWT Token Information";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="content-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>
+                <i class="bi bi-key-fill text-primary"></i> JWT Token Information
+            </h2>
+            <p class="text-muted mb-0">
+                JSON Web Token authentication demonstration
+            </p>
+        </div>
+    </div>
+
+    <!-- Token Status -->
+    <div class="card mb-4 @(ViewBag.HasToken ? "border-success" : "border-warning")">
+        <div class="card-header @(ViewBag.HasToken ? "bg-success" : "bg-warning") text-white">
+            <i class="bi bi-shield-check"></i> Token Status
+        </div>
+        <div class="card-body">
+            @if (ViewBag.HasToken)
+            {
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle-fill"></i> 
+                    <strong>JWT Token Active</strong> - A valid JWT token is stored in your session.
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill"></i> 
+                    <strong>No JWT Token Found</strong> - Please log in to generate a token.
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (ViewBag.HasToken)
+    {
+        <!-- Token Preview -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <i class="bi bi-code-slash"></i> Token Preview
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-2">First 50 characters of your JWT:</p>
+                <code class="d-block p-3 bg-light rounded" style="word-break: break-all;">
+                    @ViewBag.TokenPreview
+                </code>
+                <hr />
+                <p class="text-muted small mb-2">Full Token (click to reveal):</p>
+                <details>
+                    <summary class="btn btn-sm btn-outline-secondary mb-2">
+                        <i class="bi bi-eye"></i> Show Full Token
+                    </summary>
+                    <textarea class="form-control font-monospace" rows="6" readonly style="font-size: 0.75rem;">@ViewBag.Token</textarea>
+                </details>
+            </div>
+        </div>
+
+        <!-- API Test Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <i class="bi bi-lightning-fill"></i> Test JWT-Protected API
+            </div>
+            <div class="card-body">
+                <p class="text-muted">
+                    Click the button below to test the JWT-protected API endpoint. 
+                    The request will use the JWT from your cookie to authenticate.
+                </p>
+                <button id="testApiBtn" class="btn btn-info">
+                    <i class="bi bi-play-fill"></i> Test API: /api/SystemInfo/status
+                </button>
+                <button id="testClaimsBtn" class="btn btn-outline-info ms-2">
+                    <i class="bi bi-list-check"></i> View JWT Claims
+                </button>
+                <hr />
+                <div id="apiResponse" class="d-none">
+                    <h6>API Response:</h6>
+                    <pre class="bg-dark text-light p-3 rounded" style="max-height: 400px; overflow: auto;"><code id="responseCode"></code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- JWT Structure Explanation -->
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <i class="bi bi-info-circle"></i> About JWT Authentication
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6 class="text-primary"><i class="bi bi-1-circle-fill"></i> Header</h6>
+                        <p class="small text-muted">
+                            Contains token type (JWT) and signing algorithm (HS256).
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-success"><i class="bi bi-2-circle-fill"></i> Payload</h6>
+                        <p class="small text-muted">
+                            Contains claims: UserId, Email, FullName, InstituteId, Roles.
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-danger"><i class="bi bi-3-circle-fill"></i> Signature</h6>
+                        <p class="small text-muted">
+                            HMAC-SHA256 signature ensuring token integrity.
+                        </p>
+                    </div>
+                </div>
+                <hr />
+                <p class="mb-0 small">
+                    <strong>Multi-Tenant Claim:</strong> The <code>InstituteId</code> claim ensures 
+                    tenant isolation. All API requests are scoped to the user's institute.
+                </p>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('testApiBtn')?.addEventListener('click', async function() {
+            const responseDiv = document.getElementById('apiResponse');
+            const responseCode = document.getElementById('responseCode');
+            
+            try {
+                const response = await fetch('/api/SystemInfo/status', {
+                    method: 'GET',
+                    credentials: 'include' // Include cookies (JWT)
+                });
+                
+                const data = await response.json();
+                responseCode.textContent = JSON.stringify(data, null, 2);
+                responseDiv.classList.remove('d-none');
+            } catch (error) {
+                responseCode.textContent = 'Error: ' + error.message;
+                responseDiv.classList.remove('d-none');
+            }
+        });
+
+        document.getElementById('testClaimsBtn')?.addEventListener('click', async function() {
+            const responseDiv = document.getElementById('apiResponse');
+            const responseCode = document.getElementById('responseCode');
+            
+            try {
+                const response = await fetch('/api/SystemInfo/claims', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                responseCode.textContent = JSON.stringify(data, null, 2);
+                responseDiv.classList.remove('d-none');
+            } catch (error) {
+                responseCode.textContent = 'Error: ' + error.message;
+                responseDiv.classList.remove('d-none');
+            }
+        });
+    </script>
+}
